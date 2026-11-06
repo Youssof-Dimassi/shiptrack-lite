@@ -1,0 +1,21 @@
+# Downloaded packages (npm install re-creates this folder)
+node_modules/
+
+# Secrets: passwords, API keys. NEVER commit these.
+.env
+
+# Database files (each developer has their own local copy)
+*.db
+*.sqlite
+
+# Files uploaded by users
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor and operating-system clutter
+.vscode/
+.DS_Store
+Thumbs.db

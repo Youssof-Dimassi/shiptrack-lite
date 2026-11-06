@@ -1,0 +1,13 @@
+{
+  "name": "shiptrack-lite",
+  "version": "0.1.0",
+  "description": "A simplified shipment-tracking web application, built as a learning project.",
+  "private": true,
+  "type": "module",
+  "scripts": {},
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Youssof Dimassi",
+  "license": "UNLICENSED"
+}
