@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up · ShipTrack Lite</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="account.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1><a href="/">ShipTrack Lite</a></h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/login">Log in</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <form id="register-form" class="auth-form">
+            <h2>Create an account</h2>
+
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" autocomplete="name" maxlength="100" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" autocomplete="email" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="new-password"
+                minlength="8" maxlength="128" required>
+            <small class="form-hint">At least 8 characters.</small>
+
+            <p class="form-error" role="alert" hidden></p>
+
+            <button type="submit">Sign up</button>
+
+            <p class="form-switch">Already have an account? <a href="/login">Log in</a></p>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2026 ShipTrack Lite</p>
+    </footer>
+</body>
+</html>

@@ -13,16 +13,28 @@ A simplified shipment-tracking web application, built step by step as a hands-on
 ```text
 shiptrack-lite/
 ├── public/          Files sent to the browser (HTML, CSS, browser JavaScript)
-│   ├── index.html
+│   ├── index.html         Home page with the tracking form
+│   ├── login.html         Log-in page
+│   ├── register.html      Sign-up page
 │   ├── style.css
-│   └── app.js       Browser code: sends the tracking form to the API, shows the result
+│   ├── app.js             Tracking form: calls the API, shows the result
+│   ├── account.js         Log-in and sign-up forms
+│   └── nav.js             Shows "Log in" or "Hi, <name> · Log out"
 ├── src/             Server code (runs on the server, never sent to the browser)
-│   ├── server.js          Routes: decides how to answer each request
+│   ├── server.js          Creates the app and connects all the pieces
+│   ├── routes/            Which URL does what
+│   │   ├── auth.js        Register, log in, log out, "who am I?"
+│   │   └── shipments.js   Shipment lookup
+│   ├── auth/
+│   │   ├── passwords.js   Password hashing (scrypt)
+│   │   └── middleware.js  Reads the login cookie, sets req.user
 │   ├── db/
 │   │   ├── database.js    Opens the SQLite database and creates the tables
 │   │   └── seed.js        Sample shipments, inserted on first run
-│   └── models/
-│       └── shipments.js   SQL queries for shipments
+│   └── models/            SQL queries
+│       ├── shipments.js
+│       ├── users.js
+│       └── sessions.js
 ├── package.json     Project info, scripts, and dependencies
 └── README.md
 ```
@@ -61,9 +73,21 @@ Press `Ctrl + C` in the terminal to stop the server.
 
 | URL | What it returns |
 | --- | --- |
-| `/` | The landing page |
-| `/api/health` | `{"status":"ok"}` (checks the server is running) |
-| `/api/shipments/:trackingNumber` | One shipment as JSON. `400` if the number is badly formatted, `404` if it doesn't exist |
+| `GET /` | The landing page |
+| `GET /login`, `GET /register` | Log-in and sign-up pages |
+| `GET /api/health` | `{"status":"ok"}` (checks the server is running) |
+| `GET /api/shipments/:trackingNumber` | One shipment as JSON. `400` if the number is badly formatted, `404` if it doesn't exist |
+| `POST /api/auth/register` | Create an account `{ name, email, password }` and log in |
+| `POST /api/auth/login` | Log in `{ email, password }` |
+| `POST /api/auth/logout` | Log out |
+| `GET /api/auth/me` | The logged-in user, or `401` |
+
+### How login works
+
+- Passwords are hashed with **scrypt** (with a random salt) before being stored. The password itself is never saved.
+- On log-in, the server creates a random session token and sends it in an `HttpOnly` cookie.
+  Only a hash of the token is stored in the database.
+- Sessions last 7 days. Logging out deletes the session.
 
 ### Sample tracking numbers
 

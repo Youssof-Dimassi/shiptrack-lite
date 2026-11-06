@@ -28,6 +28,29 @@ nav a {
     color: white;
     padding: 10px;
 }
+
+header h1 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+nav ul {
+    padding-bottom: 12px;
+}
+
+.nav-greeting {
+    color: #c9d7ea;
+    padding: 10px;
+}
+
+/* A button that looks like a nav link (used for "Log out"). */
+.link-button {
+    background: none;
+    padding: 10px;
+    color: white;
+    font: inherit;
+    text-decoration: underline;
+}
 form {
     text-align: center;
     margin: 30px;
@@ -52,6 +75,56 @@ button {
 button:disabled {
     opacity: 0.6;
     cursor: wait;
+}
+
+/* ---------- Log in / Sign up forms ---------- */
+
+.auth-form {
+    max-width: 360px;
+    margin: 30px auto;
+    padding: 24px;
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #dde3ec;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-form h2 {
+    margin-top: 0;
+}
+
+.auth-form label {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.auth-form input {
+    width: auto;
+}
+
+.auth-form button {
+    margin-top: 16px;
+}
+
+.form-hint {
+    color: #666666;
+}
+
+.form-error {
+    background-color: #fdecea;
+    color: #a12622;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0 0;
+}
+
+.form-switch {
+    text-align: center;
+    color: #666666;
+    margin-bottom: 0;
 }
 
 /* ---------- Tracking result ---------- */
