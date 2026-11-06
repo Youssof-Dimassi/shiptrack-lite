@@ -5,7 +5,7 @@ A simplified shipment-tracking web application, built step by step as a hands-on
 ## Tech stack
 
 - **Frontend:** HTML, CSS, JavaScript
-- **Backend:** Node.js (Express, coming next)
+- **Backend:** Node.js + Express
 - **Database:** SQLite (planned)
 
 ## Project structure
@@ -15,6 +15,8 @@ shiptrack-lite/
 ├── public/          Files sent to the browser (HTML, CSS, browser JavaScript)
 │   ├── index.html
 │   └── style.css
+├── src/             Server code (runs on the server, never sent to the browser)
+│   └── server.js
 ├── package.json     Project info, scripts, and dependencies
 └── README.md
 ```
@@ -31,8 +33,30 @@ node -v
 
 ## Running locally
 
-For now, open `public/index.html` in your browser.
-A Node.js server will replace this in the next step.
+1. Install the dependencies (only needed the first time, or after `package.json` changes):
+
+   ```powershell
+   npm install
+   ```
+
+2. Start the server:
+
+   ```powershell
+   npm run dev
+   ```
+
+3. Open <http://localhost:3000> in your browser.
+
+`npm run dev` restarts the server automatically when you save a file.
+Use `npm start` to run it without auto-restart.
+Press `Ctrl + C` in the terminal to stop the server.
+
+### Routes
+
+| URL | What it returns |
+| --- | --- |
+| `/` | The landing page |
+| `/api/health` | `{"status":"ok"}` (checks the server is running) |
 
 ## Development workflow
 
