@@ -6,7 +6,7 @@ A simplified shipment-tracking web application, built step by step as a hands-on
 
 - **Frontend:** HTML, CSS, JavaScript
 - **Backend:** Node.js + Express
-- **Database:** SQLite (planned)
+- **Database:** SQLite (built into Node.js, via `node:sqlite`)
 
 ## Project structure
 
@@ -17,16 +17,19 @@ shiptrack-lite/
 │   ├── style.css
 │   └── app.js       Browser code: sends the tracking form to the API, shows the result
 ├── src/             Server code (runs on the server, never sent to the browser)
-│   ├── server.js
-│   └── data/
-│       └── shipments.js   Sample shipment data
+│   ├── server.js          Routes: decides how to answer each request
+│   ├── db/
+│   │   ├── database.js    Opens the SQLite database and creates the tables
+│   │   └── seed.js        Sample shipments, inserted on first run
+│   └── models/
+│       └── shipments.js   SQL queries for shipments
 ├── package.json     Project info, scripts, and dependencies
 └── README.md
 ```
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) version 20 or newer
+- [Node.js](https://nodejs.org/) version 22.13 or newer (needed for the built-in SQLite)
 
 Check your version:
 
@@ -64,7 +67,9 @@ Press `Ctrl + C` in the terminal to stop the server.
 
 ### Sample tracking numbers
 
-The data is sample data for now (in `src/data/shipments.js`); a database comes later.
+The first time the server starts, it creates the database file `shiptrack.db`
+and fills it with these sample shipments (see `src/db/seed.js`).
+The file is not committed to Git. Delete it to start over with fresh sample data.
 
 | Tracking number | Status |
 | --- | --- |

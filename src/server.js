@@ -7,7 +7,7 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { shipments } from "./data/shipments.js";
+import { findShipmentByTrackingNumber } from "./models/shipments.js";
 
 // --- Settings -------------------------------------------------------------
 
@@ -49,8 +49,8 @@ app.get("/api/shipments/:trackingNumber", (req, res) => {
     });
   }
 
-  // 2. Look it up.
-  const shipment = shipments.find((s) => s.trackingNumber === trackingNumber);
+  // 2. Look it up in the database.
+  const shipment = findShipmentByTrackingNumber(trackingNumber);
 
   // 3. Not found → 404. Found → 200 with the shipment as JSON.
   if (!shipment) {
