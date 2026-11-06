@@ -50,6 +50,28 @@ db.exec(`
     location    TEXT    NOT NULL,
     description TEXT    NOT NULL
   );
+
+  -- People who can log in.
+  -- We NEVER store the password itself, only a one-way hash of it.
+  -- role is "customer" or "admin" (admins will manage shipments in Step 6).
+  CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT    NOT NULL,
+    email         TEXT    NOT NULL UNIQUE,
+    password_hash TEXT    NOT NULL,
+    role          TEXT    NOT NULL DEFAULT 'customer' CHECK (role IN ('customer', 'admin')),
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+
+  -- One row per logged-in browser.
+  -- token_hash is a hash of the secret stored in the user's cookie, so a
+  -- stolen copy of the database can't be used to log in as anyone.
+  CREATE TABLE IF NOT EXISTS sessions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    token_hash TEXT    NOT NULL UNIQUE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at TEXT    NOT NULL
+  );
 `);
 
 // Fill the database with sample shipments the first time it is created.
