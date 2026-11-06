@@ -4,10 +4,16 @@
   "description": "A simplified shipment-tracking web application, built as a learning project.",
   "private": true,
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
   "engines": {
     "node": ">=20"
   },
   "author": "Youssof Dimassi",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }
