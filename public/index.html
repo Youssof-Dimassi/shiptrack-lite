@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShipTrack Lite</title>
     <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
 </head>
 <body>
     <header id="home">
@@ -19,15 +20,17 @@
     </header>
     <main id="track">
             <h2>Track Your Shipment</h2>
-            <form>
+            <form id="track-form">
                 <label for="tracking-number">Tracking Number:</label>
                 <input type="text"
-                    id="tracking-number" 
+                    id="tracking-number"
                     name="tracking-number"
-                    placeholder="Enter your tracking number"
+                    placeholder="e.g. ST10000001"
+                    autocomplete="off"
                     required>
                 <button type="submit">Track Shipment</button>
             </form>
+            <div id="result" aria-live="polite"></div>
             <section id="about">
             <h3>Real-Time Tracking</h3>
             <p>Track your shipment and follow its progress.</p>

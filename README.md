@@ -14,9 +14,12 @@ A simplified shipment-tracking web application, built step by step as a hands-on
 shiptrack-lite/
 ├── public/          Files sent to the browser (HTML, CSS, browser JavaScript)
 │   ├── index.html
-│   └── style.css
+│   ├── style.css
+│   └── app.js       Browser code: sends the tracking form to the API, shows the result
 ├── src/             Server code (runs on the server, never sent to the browser)
-│   └── server.js
+│   ├── server.js
+│   └── data/
+│       └── shipments.js   Sample shipment data
 ├── package.json     Project info, scripts, and dependencies
 └── README.md
 ```
@@ -57,6 +60,17 @@ Press `Ctrl + C` in the terminal to stop the server.
 | --- | --- |
 | `/` | The landing page |
 | `/api/health` | `{"status":"ok"}` (checks the server is running) |
+| `/api/shipments/:trackingNumber` | One shipment as JSON. `400` if the number is badly formatted, `404` if it doesn't exist |
+
+### Sample tracking numbers
+
+The data is sample data for now (in `src/data/shipments.js`); a database comes later.
+
+| Tracking number | Status |
+| --- | --- |
+| `ST10000001` | In Transit |
+| `ST10000002` | Delivered |
+| `ST10000003` | Pending |
 
 ## Development workflow
 

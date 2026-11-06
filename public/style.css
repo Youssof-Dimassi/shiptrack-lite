@@ -7,6 +7,12 @@ header{
     text-align: center;
     background-color: #1e3a5f;
 }
+
+header h1 {
+    color: white;
+    margin: 0;
+    padding: 16px 0 8px;
+}
 nav ul {
     list-style: none;
     margin: 0;
@@ -41,6 +47,104 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* ---------- Tracking result ---------- */
+
+#result {
+    max-width: 600px;
+    margin: 0 auto 30px;
+}
+
+.message {
+    text-align: center;
+    padding: 12px;
+    border-radius: 5px;
+}
+
+.message-loading {
+    color: #666666;
+}
+
+.message-error {
+    background-color: #fdecea;
+    color: #a12622;
+}
+
+.shipment-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #dde3ec;
+}
+
+.shipment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.shipment-header h3 {
+    margin: 0;
+    color: #1e3a5f;
+}
+
+.status {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.status-in-transit { background-color: #e3f0ff; color: #1a5fb4; }
+.status-delivered  { background-color: #e6f6ea; color: #1e7a3a; }
+.status-pending    { background-color: #fff4e0; color: #8a5300; }
+
+.shipment-details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    margin: 20px 0;
+}
+
+.shipment-details dt {
+    color: #666666;
+}
+
+.shipment-details dd {
+    margin: 0;
+}
+
+.shipment-card h4 {
+    color: #1e3a5f;
+    margin-bottom: 10px;
+}
+
+.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 20px;
+    border-left: 2px solid #dde3ec;
+}
+
+.timeline li {
+    margin-bottom: 14px;
+}
+
+.timeline strong {
+    display: block;
+}
+
+.timeline span {
+    color: #666666;
+    font-size: 0.9em;
 }
 section {
     background-color: white;

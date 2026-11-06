@@ -7,6 +7,7 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { shipments } from "./data/shipments.js";
 
 // --- Settings -------------------------------------------------------------
 
@@ -29,6 +30,42 @@ const app = express();
 // Real systems call this to check the server is running.
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// Tracking numbers look like "ST" followed by exactly 8 digits: ST10000001
+const TRACKING_NUMBER_PATTERN = /^ST\d{8}$/;
+
+// Look up one shipment by its tracking number.
+// ":trackingNumber" is a placeholder: for GET /api/shipments/ST10000001,
+// req.params.trackingNumber is "ST10000001".
+app.get("/api/shipments/:trackingNumber", (req, res) => {
+  // Clean up the input: remove spaces around it, make it uppercase.
+  const trackingNumber = req.params.trackingNumber.trim().toUpperCase();
+
+  // 1. Validate: never trust input from the browser.
+  if (!TRACKING_NUMBER_PATTERN.test(trackingNumber)) {
+    return res.status(400).json({
+      error: "Invalid tracking number. It should look like ST12345678.",
+    });
+  }
+
+  // 2. Look it up.
+  const shipment = shipments.find((s) => s.trackingNumber === trackingNumber);
+
+  // 3. Not found → 404. Found → 200 with the shipment as JSON.
+  if (!shipment) {
+    return res.status(404).json({
+      error: `No shipment found with tracking number ${trackingNumber}.`,
+    });
+  }
+
+  res.json(shipment);
+});
+
+// Any other /api address that doesn't exist: answer in JSON, not HTML,
+// because API callers expect JSON.
+app.use("/api", (req, res) => {
+  res.status(404).json({ error: "API route not found." });
 });
 
 // --- Static files ---------------------------------------------------------
