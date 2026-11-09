@@ -68,6 +68,12 @@
                         </table>
                     </div>
                     <p id="no-shipments" class="admin-note" hidden>No shipments to show.</p>
+
+                    <nav id="pager" class="pager" aria-label="Pages of shipments" hidden>
+                        <button type="button" id="previous-page" class="button-secondary">Previous</button>
+                        <span id="pager-info" aria-live="polite"></span>
+                        <button type="button" id="next-page" class="button-secondary">Next</button>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -91,6 +97,42 @@
             <div class="dialog-actions">
                 <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
                 <button type="submit">Create shipment</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="edit-dialog" class="admin-dialog" aria-labelledby="edit-title">
+        <form id="edit-form">
+            <h2 id="edit-title">Edit shipment</h2>
+
+            <label for="edit-origin">From</label>
+            <input type="text" id="edit-origin" name="origin" maxlength="120" required>
+
+            <label for="edit-destination">To</label>
+            <input type="text" id="edit-destination" name="destination" maxlength="120" required>
+
+            <label for="edit-estimated-delivery">Estimated delivery</label>
+            <input type="date" id="edit-estimated-delivery" name="estimatedDelivery" required>
+
+            <p class="form-error" role="alert" hidden></p>
+
+            <div class="dialog-actions">
+                <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
+                <button type="submit">Save changes</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="delete-dialog" class="admin-dialog" aria-labelledby="delete-title">
+        <form id="delete-form">
+            <h2 id="delete-title">Delete shipment?</h2>
+            <p class="dialog-text">This permanently deletes the shipment and its history, and removes it from customers' saved lists. This can't be undone.</p>
+
+            <p class="form-error" role="alert" hidden></p>
+
+            <div class="dialog-actions">
+                <button type="button" class="button-secondary" data-close-dialog autofocus>Cancel</button>
+                <button type="submit" class="button-danger">Delete shipment</button>
             </div>
         </form>
     </dialog>

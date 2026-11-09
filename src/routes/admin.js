@@ -1,8 +1,10 @@
 // Staff-only routes for managing shipments.
 //
-//   GET  /api/admin/shipments                       → list shipments
-//   POST /api/admin/shipments                       → create a shipment
-//   POST /api/admin/shipments/:trackingNumber/events → post a status update
+//   GET    /api/admin/shipments?page=&search=&status= → one page of shipments
+//   POST   /api/admin/shipments                       → create a shipment
+//   PUT    /api/admin/shipments/:trackingNumber       → edit its details
+//   DELETE /api/admin/shipments/:trackingNumber       → delete it
+//   POST   /api/admin/shipments/:trackingNumber/events → post a status update
 
 import { Router } from "express";
 import { requireAdmin, requireAuth } from "../auth/middleware.js";
@@ -11,11 +13,15 @@ import {
   TRACKING_NUMBER_PATTERN,
   addShipmentUpdate,
   createShipment,
-  listShipments,
+  deleteShipment,
+  searchShipments,
+  updateShipmentDetails,
 } from "../models/shipments.js";
 
 export const adminRouter = Router();
 
+const PAGE_SIZE = 20;
+const MAX_SEARCH_LENGTH = 100;
 const MAX_PLACE_LENGTH = 120;
 const MAX_DESCRIPTION_LENGTH = 200;
 
@@ -24,29 +30,66 @@ const MAX_DESCRIPTION_LENGTH = 200;
 adminRouter.use(requireAuth, requireAdmin);
 
 adminRouter.get("/shipments", (req, res) => {
-  res.json({ shipments: listShipments(), statuses: SHIPMENT_STATUSES });
+  const { page: pageText = "1", search: searchText = "", status } = req.query;
+
+  // Query values are whatever the address says, so they get checked too.
+  // Repeating a value in the address (?page=1&page=2) produces a list, not text.
+  if (typeof pageText !== "string" || !/^[1-9]\d{0,8}$/.test(pageText)) {
+    return badRequest(res, "Invalid page number.");
+  }
+  if (typeof searchText !== "string" || searchText.length > MAX_SEARCH_LENGTH) {
+    return badRequest(res, `Search text can be up to ${MAX_SEARCH_LENGTH} characters.`);
+  }
+  if (status !== undefined && !SHIPMENT_STATUSES.includes(status)) {
+    return badRequest(res, "Please choose a valid status.");
+  }
+
+  const results = searchShipments({
+    page: Number(pageText),
+    pageSize: PAGE_SIZE,
+    search: searchText.trim(),
+    status: status ?? null,
+  });
+
+  res.json({ ...results, statuses: SHIPMENT_STATUSES });
 });
 
 adminRouter.post("/shipments", (req, res) => {
-  const origin = cleanText(req.body?.origin);
-  const destination = cleanText(req.body?.destination);
-  const estimatedDelivery = cleanText(req.body?.estimatedDelivery);
+  const { details, error } = readShipmentDetails(req.body);
+  if (error) return badRequest(res, error);
 
-  if (!isValidPlace(origin)) return badRequest(res, placeError("origin"));
-  if (!isValidPlace(destination)) return badRequest(res, placeError("destination"));
-  if (!isRealDate(estimatedDelivery)) return badRequest(res, "Please enter a valid estimated delivery date.");
+  res.status(201).json({ shipment: createShipment(details) });
+});
 
-  const shipment = createShipment({ origin, destination, estimatedDelivery });
-  res.status(201).json({ shipment });
+adminRouter.put("/shipments/:trackingNumber", (req, res) => {
+  const trackingNumber = readTrackingNumber(req);
+  if (!trackingNumber) return badRequest(res, "Invalid tracking number.");
+
+  const { details, error } = readShipmentDetails(req.body);
+  if (error) return badRequest(res, error);
+
+  const shipment = updateShipmentDetails(trackingNumber, details);
+  if (!shipment) return notFound(res, trackingNumber);
+
+  res.json({ shipment });
+});
+
+adminRouter.delete("/shipments/:trackingNumber", (req, res) => {
+  const trackingNumber = readTrackingNumber(req);
+  if (!trackingNumber) return badRequest(res, "Invalid tracking number.");
+
+  if (!deleteShipment(trackingNumber)) return notFound(res, trackingNumber);
+
+  res.status(204).end();
 });
 
 adminRouter.post("/shipments/:trackingNumber/events", (req, res) => {
-  const trackingNumber = req.params.trackingNumber.trim().toUpperCase();
+  const trackingNumber = readTrackingNumber(req);
   const status = cleanText(req.body?.status);
   const location = cleanText(req.body?.location);
   const description = cleanText(req.body?.description);
 
-  if (!TRACKING_NUMBER_PATTERN.test(trackingNumber)) return badRequest(res, "Invalid tracking number.");
+  if (!trackingNumber) return badRequest(res, "Invalid tracking number.");
   if (!SHIPMENT_STATUSES.includes(status)) return badRequest(res, "Please choose a valid status.");
   if (!isValidPlace(location)) return badRequest(res, placeError("location"));
   if (!description || description.length > MAX_DESCRIPTION_LENGTH) {
@@ -54,9 +97,7 @@ adminRouter.post("/shipments/:trackingNumber/events", (req, res) => {
   }
 
   const shipment = addShipmentUpdate(trackingNumber, { status, location, description });
-  if (!shipment) {
-    return res.status(404).json({ error: `No shipment found with tracking number ${trackingNumber}.` });
-  }
+  if (!shipment) return notFound(res, trackingNumber);
 
   res.status(201).json({ shipment });
 });
@@ -65,6 +106,31 @@ adminRouter.post("/shipments/:trackingNumber/events", (req, res) => {
 
 function badRequest(res, error) {
   return res.status(400).json({ error });
+}
+
+function notFound(res, trackingNumber) {
+  return res.status(404).json({ error: `No shipment found with tracking number ${trackingNumber}.` });
+}
+
+// Returns the cleaned-up number, or null if it's not a valid tracking number.
+function readTrackingNumber(req) {
+  const trackingNumber = req.params.trackingNumber.trim().toUpperCase();
+  return TRACKING_NUMBER_PATTERN.test(trackingNumber) ? trackingNumber : null;
+}
+
+// Creating and editing accept exactly the same fields, so they share these
+// checks. Only the listed fields are read: anything else in the request,
+// such as a different tracking number or status, is ignored.
+function readShipmentDetails(body) {
+  const origin = cleanText(body?.origin);
+  const destination = cleanText(body?.destination);
+  const estimatedDelivery = cleanText(body?.estimatedDelivery);
+
+  if (!isValidPlace(origin)) return { error: placeError("origin") };
+  if (!isValidPlace(destination)) return { error: placeError("destination") };
+  if (!isRealDate(estimatedDelivery)) return { error: "Please enter a valid estimated delivery date." };
+
+  return { details: { origin, destination, estimatedDelivery } };
 }
 
 function cleanText(value) {

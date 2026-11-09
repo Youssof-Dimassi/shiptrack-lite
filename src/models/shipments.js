@@ -18,9 +18,6 @@ export const SHIPMENT_STATUSES = [
   "Cancelled",
 ];
 
-// How many shipments the admin list returns at most.
-const LIST_LIMIT = 200;
-
 const findShipment = db.prepare(`
   SELECT id, tracking_number, status, origin, destination, estimated_delivery
   FROM shipments
@@ -34,12 +31,29 @@ const findEvents = db.prepare(`
   ORDER BY occurred_at, id
 `);
 
-const selectRecentShipments = db.prepare(`
-  SELECT id, tracking_number, status, origin, destination, estimated_delivery
+// The filters only apply when given: a NULL value means "don't filter by this".
+const MATCHES_FILTERS = `
+  (:status IS NULL OR status = :status)
+  AND (
+    :pattern IS NULL
+    OR tracking_number LIKE :pattern ESCAPE '\\'
+    OR status          LIKE :pattern ESCAPE '\\'
+    OR origin          LIKE :pattern ESCAPE '\\'
+    OR destination     LIKE :pattern ESCAPE '\\'
+  )
+`;
+
+const countMatching = db.prepare(`SELECT COUNT(*) AS count FROM shipments WHERE ${MATCHES_FILTERS}`);
+
+const selectMatchingPage = db.prepare(`
+  SELECT tracking_number, status, origin, destination, estimated_delivery
   FROM shipments
+  WHERE ${MATCHES_FILTERS}
   ORDER BY id DESC
-  LIMIT ?
+  LIMIT :limit OFFSET :offset
 `);
+
+const countByStatus = db.prepare("SELECT status, COUNT(*) AS count FROM shipments GROUP BY status");
 
 const insertShipment = db.prepare(`
   INSERT INTO shipments (tracking_number, status, origin, destination, estimated_delivery)
@@ -52,6 +66,15 @@ const insertEvent = db.prepare(`
 `);
 
 const updateStatus = db.prepare("UPDATE shipments SET status = ? WHERE id = ?");
+
+const updateDetails = db.prepare(`
+  UPDATE shipments
+  SET origin = ?, destination = ?, estimated_delivery = ?
+  WHERE tracking_number = ?
+`);
+
+// Its history and customers' saved links go with it (ON DELETE CASCADE).
+const removeShipment = db.prepare("DELETE FROM shipments WHERE tracking_number = ?");
 
 // Database columns use snake_case (tracking_number); JavaScript uses
 // camelCase (trackingNumber). This is the one place that converts them.
@@ -80,9 +103,39 @@ export function findShipmentByTrackingNumber(trackingNumber) {
   };
 }
 
-// Newest first, without the event history (the admin table doesn't need it).
-export function listShipments() {
-  return selectRecentShipments.all(LIST_LIMIT).map(toShipment);
+// One page of shipments, newest first, without their event history.
+// Asking for a page past the end gives the last page.
+export function searchShipments({ page, pageSize, search, status }) {
+  // % and _ are wildcards in LIKE, so they're escaped to be searched for literally.
+  const pattern = search ? `%${search.replace(/[\\%_]/g, "\\$&")}%` : null;
+  const filters = { status, pattern };
+
+  const total = countMatching.get(filters).count;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, totalPages);
+
+  const rows = selectMatchingPage.all({ ...filters, limit: pageSize, offset: (currentPage - 1) * pageSize });
+
+  const statusCounts = countByStatus.all();
+  const counts = {
+    all: statusCounts.reduce((sum, row) => sum + row.count, 0),
+    byStatus: Object.fromEntries(statusCounts.map((row) => [row.status, row.count])),
+  };
+
+  return { shipments: rows.map(toShipment), page: currentPage, pageSize, total, totalPages, counts };
+}
+
+// Changes the details only. Status changes go through addShipmentUpdate, so
+// they always leave an entry in the history.
+// Returns the updated shipment, or null if the tracking number doesn't exist.
+export function updateShipmentDetails(trackingNumber, { origin, destination, estimatedDelivery }) {
+  const { changes } = updateDetails.run(origin, destination, estimatedDelivery, trackingNumber);
+  return changes > 0 ? findShipmentByTrackingNumber(trackingNumber) : null;
+}
+
+// Returns true if the shipment existed and is now gone.
+export function deleteShipment(trackingNumber) {
+  return removeShipment.run(trackingNumber).changes > 0;
 }
 
 // Creates a shipment and its first history entry. Returns the new shipment.

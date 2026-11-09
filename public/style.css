@@ -18,6 +18,8 @@
     --accent-soft: #fdeee6;
     --button-bg: #c2410c;
     --button-hover: #9a3412;
+    --danger-bg: #b91c1c;
+    --danger-hover: #991b1b;
     --logo-bg: #0f2439;
 
     /* Surfaces and text */
@@ -951,6 +953,44 @@ input::placeholder {
 
 .button-secondary:hover {
     background-color: var(--background);
+}
+
+.row-actions {
+    display: inline-flex;
+    gap: 6px;
+}
+
+.button-danger-outline {
+    color: var(--red-text);
+}
+
+button[type="submit"].button-danger {
+    background-color: var(--danger-bg);
+}
+
+button[type="submit"].button-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+.dialog-text {
+    margin: 8px 0 0;
+    color: var(--muted);
+}
+
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.button-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .admin-dialog {
