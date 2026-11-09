@@ -55,7 +55,7 @@ const updateStatus = db.prepare("UPDATE shipments SET status = ? WHERE id = ?");
 
 // Database columns use snake_case (tracking_number); JavaScript uses
 // camelCase (trackingNumber). This is the one place that converts them.
-function toShipment(row) {
+export function toShipment(row) {
   return {
     trackingNumber: row.tracking_number,
     status: row.status,

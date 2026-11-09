@@ -5,6 +5,7 @@
 // needs to be installed.
 
 import { DatabaseSync } from "node:sqlite";
+import { demoMode } from "../config.js";
 import { seedDatabase } from "./seed.js";
 
 // Where the database file lives. Can be changed with the DATABASE_PATH
@@ -71,6 +72,14 @@ db.exec(`
     reset_at INTEGER NOT NULL
   );
 
+  -- Shipments a customer has saved to their account.
+  CREATE TABLE IF NOT EXISTS saved_shipments (
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    shipment_id INTEGER NOT NULL REFERENCES shipments(id) ON DELETE CASCADE,
+    saved_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, shipment_id)
+  );
+
   -- One row per logged-in browser.
   -- token_hash is a hash of the secret stored in the user's cookie, so a
   -- stolen copy of the database can't be used to log in as anyone.
@@ -95,5 +104,5 @@ export function runInTransaction(work) {
   }
 }
 
-// Fill the database with sample shipments the first time it is created.
-seedDatabase(db);
+// In demo mode, fill an empty database with sample shipments.
+if (demoMode) seedDatabase(db);

@@ -8,6 +8,7 @@
 import { Router } from "express";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
 import { SESSION_COOKIE, readCookie, requireAuth } from "../auth/middleware.js";
+import { sendTooManyAttempts } from "../auth/rateLimiting.js";
 import { consumeAttempt, refundAttempt, resetAttempts } from "../models/rateLimits.js";
 import { SESSION_DURATION_MS, createSession, destroySession } from "../models/sessions.js";
 import { createUser, findUserByEmailWithPassword } from "../models/users.js";
@@ -39,15 +40,6 @@ function loginLimits(ip, email) {
 
 function registerLimit(ip) {
   return { key: `register:ip:${ip}`, limit: 20, windowMs: 60 * MINUTE };
-}
-
-// 429 means "too many requests". Retry-After tells the caller how long to wait.
-function sendTooManyAttempts(res, retryAfterSeconds) {
-  const minutes = Math.ceil(retryAfterSeconds / 60);
-  res.set("Retry-After", String(retryAfterSeconds));
-  res.status(429).json({
-    error: `Too many attempts. Please try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`,
-  });
 }
 
 // --- Register ---------------------------------------------------------------

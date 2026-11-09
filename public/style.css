@@ -218,6 +218,11 @@ h1, h2, h3, h4 {
     font-weight: 600;
 }
 
+/* Lets the account links wrap with the rest of the menu on small screens. */
+#account-nav {
+    display: contents;
+}
+
 /* The "Log out" button is made to look like the other nav links. */
 .link-button {
     border: none;
@@ -634,6 +639,117 @@ input::placeholder {
     font-weight: 600;
 }
 
+/* ---------- My shipments ---------- */
+
+.shipment-actions {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+}
+
+.saved-link,
+.saved-number {
+    color: var(--accent-text);
+    font-weight: 600;
+}
+
+.save-error {
+    margin: 10px 0 0;
+    color: var(--red-text);
+    font-size: 0.95rem;
+}
+
+.my-page {
+    padding-block: 40px;
+}
+
+.my-container {
+    max-width: 800px;
+}
+
+.my-page h1 {
+    margin: 0 0 20px;
+    color: var(--heading);
+    font-size: 1.75rem;
+}
+
+.my-add {
+    margin-bottom: 24px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--surface);
+}
+
+.my-add label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.my-add-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.my-add-row input {
+    flex: 1 1 220px;
+    width: auto;
+    min-width: 0;
+}
+
+.saved-list {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.saved-card {
+    position: relative;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--surface);
+}
+
+.saved-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 8px;
+}
+
+.saved-number {
+    font-size: 1.1rem;
+}
+
+.saved-card p {
+    margin: 0;
+    padding-right: 92px;
+}
+
+.saved-card .saved-detail {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.saved-remove {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+.my-empty {
+    color: var(--muted);
+    text-align: center;
+}
+
 /* ---------- Admin dashboard ---------- */
 
 .admin-container {
@@ -945,6 +1061,16 @@ input::placeholder {
 /* ---------- Small screens ---------- */
 
 @media (max-width: 600px) {
+    .saved-card p {
+        padding-right: 0;
+    }
+
+    .saved-remove {
+        position: static;
+        margin-top: 12px;
+        transform: none;
+    }
+
     .header-inner {
         padding-block: 10px;
     }

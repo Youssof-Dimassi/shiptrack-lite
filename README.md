@@ -7,6 +7,7 @@ A simplified shipment-tracking web application, built step by step as a hands-on
 - **Frontend:** HTML, CSS, JavaScript
 - **Backend:** Node.js + Express
 - **Database:** SQLite (built into Node.js, via `node:sqlite`)
+- **Security:** Helmet for HTTP security headers
 
 ## Project structure
 
@@ -18,6 +19,8 @@ shiptrack-lite/
 │   ├── admin.html         Staff dashboard
 │   ├── admin.js           Dashboard behavior
 │   ├── register.html      Sign-up page
+│   ├── my-shipments.html  A customer's saved shipments
+│   ├── my-shipments.js    Behavior of that page
 │   ├── style.css
 │   ├── app.js             Tracking form: calls the API, shows the result
 │   ├── account.js         Log-in and sign-up forms
@@ -25,14 +28,17 @@ shiptrack-lite/
 │   └── nav.js             Shows "Log in" or "Hi, <name> · Log out"
 ├── src/             Server code (runs on the server, never sent to the browser)
 │   ├── app.js             Builds the app and connects all the pieces
+│   ├── config.js          Settings that depend on the environment
 │   ├── server.js          Starts the app
 │   ├── routes/            Which URL does what
 │   │   ├── auth.js        Register, log in, log out, "who am I?"
 │   │   ├── admin.js       Staff-only shipment management
+│   │   ├── myShipments.js A customer's saved shipments
 │   │   └── shipments.js   Shipment lookup
 │   ├── auth/
 │   │   ├── passwords.js   Password hashing (scrypt)
-│   │   └── middleware.js  Reads the login cookie, sets req.user
+│   │   ├── middleware.js  Reads the login cookie, sets req.user
+│   │   └── rateLimiting.js Shared rate limit responses and rules
 │   ├── db/
 │   │   ├── database.js    Opens the SQLite database and creates the tables
 │   │   └── seed.js        Sample shipments, inserted on first run
@@ -42,6 +48,7 @@ shiptrack-lite/
 │       ├── shipments.js
 │       ├── users.js
 │       ├── sessions.js
+│       ├── savedShipments.js
 │       └── rateLimits.js
 ├── test/            Automated tests (run with npm test)
 ├── package.json     Project info, scripts, and dependencies
@@ -90,6 +97,11 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/auth/login` | Log in `{ email, password }` |
 | `POST /api/auth/logout` | Log out |
 | `GET /api/auth/me` | The logged-in user, or `401` |
+| `GET /my-shipments` | A customer's saved shipments |
+| `GET /api/my-shipments` | The logged-in customer's saved shipments |
+| `POST /api/my-shipments` | Save a shipment `{ trackingNumber }` |
+| `DELETE /api/my-shipments/:trackingNumber` | Remove a saved shipment |
+| `GET /api/config` | Public settings the browser needs |
 | `GET /admin` | Staff dashboard |
 | `GET /api/admin/shipments` | All shipments (admin only) |
 | `POST /api/admin/shipments` | Create a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
@@ -119,11 +131,22 @@ Admin rights can only be granted from the terminal, never from the website.
 | Failed log-ins for one account from one address | 5 per 15 minutes |
 | Failed log-ins from one address, across all accounts | 30 per 15 minutes |
 | Sign-up attempts from one address | 20 per hour |
+| Tracking number lookups from one address | 60 per minute |
 
 Blocked requests get a `429` response with a `Retry-After` header.
 
 When the app runs behind a proxy, set the `TRUST_PROXY` environment variable to the
 number of proxies so the limits use each visitor's real address. Leave it unset otherwise.
+
+### Environment variables
+
+| Name | Purpose | Default |
+| --- | --- | --- |
+| `PORT` | The port to listen on | `3000` |
+| `NODE_ENV` | Set to `production` when deployed: enables HTTPS-only cookies and headers | not set |
+| `DATABASE_PATH` | Where the database file lives | `shiptrack.db` |
+| `TRUST_PROXY` | How many proxies sit in front of the app | `0` |
+| `SEED_DEMO_DATA` | `true` or `false` to override demo mode | on, except in production |
 
 ### Testing
 

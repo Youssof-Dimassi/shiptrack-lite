@@ -13,11 +13,14 @@
 // the automated tests run this same app on a temporary port.
 
 import express from "express";
+import helmet from "helmet";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadUser } from "./auth/middleware.js";
+import { demoMode, isProduction } from "./config.js";
 import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
+import { myShipmentsRouter } from "./routes/myShipments.js";
 import { shipmentsRouter } from "./routes/shipments.js";
 
 // Find the absolute path of the /public folder, no matter where the
@@ -35,6 +38,32 @@ app.set("trust proxy", Number(process.env.TRUST_PROXY ?? 0));
 
 // --- 1. Middleware --------------------------------------------------------
 
+// Security headers: instructions that tell the browser to protect visitors.
+// The content security policy lists exactly where this site may load things
+// from, so even if an attacker managed to inject a script, the browser would
+// refuse to run it.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+        fontSrc: ["https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+        // Only once the site has HTTPS. On localhost it would break loading.
+        upgradeInsecureRequests: isProduction ? [] : null,
+      },
+    },
+    strictTransportSecurity: isProduction,
+  }),
+);
+
 // Turn JSON request bodies (sent by forms via fetch) into req.body.
 // The size limit stops anyone from sending us huge requests.
 app.use(express.json({ limit: "10kb" }));
@@ -49,7 +78,13 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+// What the browser needs to know about how this site is set up.
+app.get("/api/config", (req, res) => {
+  res.json({ demoMode });
+});
+
 app.use("/api/auth", authRouter);
+app.use("/api/my-shipments", myShipmentsRouter);
 app.use("/api/shipments", shipmentsRouter);
 app.use("/api/admin", adminRouter);
 
