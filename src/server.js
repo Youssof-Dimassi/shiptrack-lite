@@ -13,6 +13,7 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadUser } from "./auth/middleware.js";
+import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { shipmentsRouter } from "./routes/shipments.js";
 
@@ -49,6 +50,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/shipments", shipmentsRouter);
+app.use("/api/admin", adminRouter);
 
 // Any other /api address that doesn't exist: answer in JSON, not HTML,
 // because API callers expect JSON.

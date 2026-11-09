@@ -74,5 +74,18 @@ db.exec(`
   );
 `);
 
+// Runs several database changes as one: if any of them fails, none are saved.
+export function runInTransaction(work) {
+  db.exec("BEGIN");
+  try {
+    const result = work();
+    db.exec("COMMIT");
+    return result;
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
 // Fill the database with sample shipments the first time it is created.
 seedDatabase(db);

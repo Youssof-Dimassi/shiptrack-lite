@@ -15,15 +15,19 @@ shiptrack-lite/
 ├── public/          Files sent to the browser (HTML, CSS, browser JavaScript)
 │   ├── index.html         Home page with the tracking form
 │   ├── login.html         Log-in page
+│   ├── admin.html         Staff dashboard
+│   ├── admin.js           Dashboard behavior
 │   ├── register.html      Sign-up page
 │   ├── style.css
 │   ├── app.js             Tracking form: calls the API, shows the result
 │   ├── account.js         Log-in and sign-up forms
+│   ├── theme.js           Light and dark mode
 │   └── nav.js             Shows "Log in" or "Hi, <name> · Log out"
 ├── src/             Server code (runs on the server, never sent to the browser)
 │   ├── server.js          Creates the app and connects all the pieces
 │   ├── routes/            Which URL does what
 │   │   ├── auth.js        Register, log in, log out, "who am I?"
+│   │   ├── admin.js       Staff-only shipment management
 │   │   └── shipments.js   Shipment lookup
 │   ├── auth/
 │   │   ├── passwords.js   Password hashing (scrypt)
@@ -31,6 +35,8 @@ shiptrack-lite/
 │   ├── db/
 │   │   ├── database.js    Opens the SQLite database and creates the tables
 │   │   └── seed.js        Sample shipments, inserted on first run
+│   ├── scripts/
+│   │   └── make-admin.js  Grants admin rights from the terminal
 │   └── models/            SQL queries
 │       ├── shipments.js
 │       ├── users.js
@@ -81,6 +87,21 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/auth/login` | Log in `{ email, password }` |
 | `POST /api/auth/logout` | Log out |
 | `GET /api/auth/me` | The logged-in user, or `401` |
+
+| `GET /admin` | Staff dashboard |
+| `GET /api/admin/shipments` | All shipments (admin only) |
+| `POST /api/admin/shipments` | Create a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
+| `POST /api/admin/shipments/:trackingNumber/events` | Post an update `{ status, location, description }` (admin only) |
+
+### Becoming an admin
+
+Sign up on the website, then run this in the terminal with your email:
+
+```powershell
+npm run make-admin -- you@example.com
+```
+
+Admin rights can only be granted from the terminal, never from the website.
 
 ### How login works
 
