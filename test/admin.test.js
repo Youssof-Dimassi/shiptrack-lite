@@ -38,10 +38,10 @@ describe("who can use the admin API", () => {
   }
 
   it("a refused customer changes nothing", async () => {
-    const before = (await admin("GET", SHIPMENTS)).json.shipments.length;
+    const before = (await admin("GET", SHIPMENTS)).json.total;
     const { client } = await createLoggedInUser();
     await client("POST", SHIPMENTS, NEW_SHIPMENT);
-    assert.equal((await admin("GET", SHIPMENTS)).json.shipments.length, before);
+    assert.equal((await admin("GET", SHIPMENTS)).json.total, before);
   });
 });
 

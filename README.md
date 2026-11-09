@@ -103,8 +103,10 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `DELETE /api/my-shipments/:trackingNumber` | Remove a saved shipment |
 | `GET /api/config` | Public settings the browser needs |
 | `GET /admin` | Staff dashboard |
-| `GET /api/admin/shipments` | All shipments (admin only) |
+| `GET /api/admin/shipments` | One page of shipments, with optional `page`, `search`, and `status` (admin only) |
 | `POST /api/admin/shipments` | Create a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
+| `PUT /api/admin/shipments/:trackingNumber` | Edit a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
+| `DELETE /api/admin/shipments/:trackingNumber` | Delete a shipment and its history (admin only) |
 | `POST /api/admin/shipments/:trackingNumber/events` | Post an update `{ status, location, description }` (admin only) |
 
 ### Becoming an admin
