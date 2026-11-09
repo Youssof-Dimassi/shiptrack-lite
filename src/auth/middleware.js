@@ -30,6 +30,15 @@ export function requireAuth(req, res, next) {
   next();
 }
 
+// Put this after requireAuth on routes only staff may use.
+// 401 means "we don't know who you are"; 403 means "we know, and the answer is no".
+export function requireAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ error: "You don't have permission to do that." });
+  }
+  next();
+}
+
 // Browsers send cookies in one header: "sid=abc123; theme=dark"
 export function readCookie(req, name) {
   const header = req.headers.cookie;

@@ -25,6 +25,14 @@ async function updateAccountNav() {
     logoutButton.addEventListener("click", logOut);
 
     accountNav.replaceChildren(greeting, logoutButton);
+
+    // This link is only a convenience. The real protection is on the server.
+    if (user.role === "admin") {
+      const adminLink = document.createElement("a");
+      adminLink.href = "/admin";
+      adminLink.textContent = "Admin";
+      accountNav.prepend(adminLink);
+    }
   } catch {
     // Server unreachable: leave the nav as it is.
   }

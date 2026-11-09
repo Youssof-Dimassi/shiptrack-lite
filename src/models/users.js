@@ -19,6 +19,13 @@ const selectById = db.prepare(`
   WHERE id = ?
 `);
 
+const updateRoleByEmail = db.prepare("UPDATE users SET role = ? WHERE email = ?");
+
+// Returns true if a user with that email existed and was updated.
+export function setUserRole(email, role) {
+  return updateRoleByEmail.run(role, email).changes > 0;
+}
+
 // Returns the new user's id.
 export function createUser({ name, email, passwordHash }) {
   const { lastInsertRowid } = insertUser.run(name, email, passwordHash);

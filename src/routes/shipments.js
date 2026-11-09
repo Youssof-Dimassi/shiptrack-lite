@@ -3,12 +3,10 @@
 //   GET /api/shipments/:trackingNumber   → one shipment, 400 if badly formatted, 404 if not found
 
 import { Router } from "express";
-import { findShipmentByTrackingNumber } from "../models/shipments.js";
+import { TRACKING_NUMBER_PATTERN, findShipmentByTrackingNumber } from "../models/shipments.js";
 
 export const shipmentsRouter = Router();
 
-// Tracking numbers look like "ST" followed by exactly 8 digits: ST10000001
-const TRACKING_NUMBER_PATTERN = /^ST\d{8}$/;
 
 // ":trackingNumber" is a placeholder: for GET /api/shipments/ST10000001,
 // req.params.trackingNumber is "ST10000001".

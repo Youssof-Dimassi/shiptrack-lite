@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · ShipTrack Lite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <script src="nav.js" defer></script>
+    <script src="admin.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="/">
+                <svg viewBox="0 0 28 28" aria-hidden="true">
+                    <rect width="28" height="28" rx="6" fill="#0f2439"/>
+                    <path d="M14 6l7 4v8l-7 4-7-4v-8z M7 10l7 4 7-4 M14 14v8" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
+                ShipTrack Lite
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li id="account-nav"><a href="/login">Log in</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="admin-page">
+        <div class="container">
+            <h1>Shipments</h1>
+
+            <p id="admin-loading" class="admin-note">Loading…</p>
+            <p id="admin-denied" class="message message-error" hidden>This page is for ShipTrack staff only.</p>
+
+            <div id="admin-app" hidden>
+                <div id="admin-message" aria-live="polite"></div>
+
+                <div class="admin-toolbar">
+                    <input type="search" id="search" placeholder="Search shipments" aria-label="Search shipments">
+                    <button type="button" id="new-shipment" class="button-primary">New shipment</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Tracking number</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">From</th>
+                                <th scope="col">To</th>
+                                <th scope="col">Estimated delivery</th>
+                                <th scope="col"><span class="visually-hidden">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="shipment-rows"></tbody>
+                    </table>
+                </div>
+                <p id="no-shipments" class="admin-note" hidden>No shipments match your search.</p>
+            </div>
+        </div>
+    </main>
+
+    <dialog id="create-dialog" class="admin-dialog" aria-labelledby="create-title">
+        <form id="create-form">
+            <h2 id="create-title">New shipment</h2>
+
+            <label for="origin">From</label>
+            <input type="text" id="origin" name="origin" maxlength="120" required>
+
+            <label for="destination">To</label>
+            <input type="text" id="destination" name="destination" maxlength="120" required>
+
+            <label for="estimated-delivery">Estimated delivery</label>
+            <input type="date" id="estimated-delivery" name="estimatedDelivery" required>
+
+            <p class="form-error" role="alert" hidden></p>
+
+            <div class="dialog-actions">
+                <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
+                <button type="submit">Create shipment</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="update-dialog" class="admin-dialog" aria-labelledby="update-title">
+        <form id="update-form">
+            <h2 id="update-title">Update shipment</h2>
+
+            <label for="status">Status</label>
+            <select id="status" name="status" required></select>
+
+            <label for="location">Current location</label>
+            <input type="text" id="location" name="location" maxlength="120" required>
+
+            <label for="description">What happened?</label>
+            <input type="text" id="description" name="description" maxlength="200"
+                placeholder="e.g. Arrived at sorting hub" required>
+
+            <p class="form-error" role="alert" hidden></p>
+
+            <div class="dialog-actions">
+                <button type="button" class="button-secondary" data-close-dialog>Cancel</button>
+                <button type="submit">Save update</button>
+            </div>
+        </form>
+    </dialog>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 ShipTrack Lite</p>
+        </div>
+    </footer>
+</body>
+</html>

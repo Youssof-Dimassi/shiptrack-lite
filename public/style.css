@@ -78,6 +78,16 @@ h1, h2, h3, h4 {
     outline-offset: 2px;
 }
 
+/* Hidden on screen but still read aloud by screen readers. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 .container {
     width: 100%;
     max-width: var(--page-width);
@@ -167,6 +177,7 @@ h1, h2, h3, h4 {
 
 /* ---------- Buttons and fields ---------- */
 
+.button-primary,
 button[type="submit"] {
     padding: 12px 22px;
     border: none;
@@ -179,6 +190,7 @@ button[type="submit"] {
     transition: background-color 0.15s;
 }
 
+.button-primary:hover,
 button[type="submit"]:hover {
     background-color: var(--orange-800);
 }
@@ -188,7 +200,8 @@ button:disabled {
     cursor: wait;
 }
 
-input {
+input,
+select {
     width: 100%;
     padding: 12px 14px;
     border: 1px solid var(--line);
@@ -360,6 +373,8 @@ input::placeholder {
 .status-in-transit { background-color: var(--blue-bg); color: var(--blue-text); }
 .status-delivered  { background-color: var(--green-bg); color: var(--green-text); }
 .status-pending    { background-color: var(--amber-bg); color: var(--amber-text); }
+.status-out-for-delivery { background-color: var(--blue-bg); color: var(--blue-text); }
+.status-cancelled  { background-color: var(--red-bg); color: var(--red-text); }
 
 .shipment-details {
     display: grid;
@@ -486,6 +501,135 @@ input::placeholder {
 .form-switch a {
     color: var(--orange-700);
     font-weight: 600;
+}
+
+/* ---------- Admin dashboard ---------- */
+
+.admin-page {
+    padding-block: 40px;
+}
+
+.admin-page h1 {
+    margin: 0 0 20px;
+    color: var(--navy-900);
+    font-size: 1.75rem;
+}
+
+.admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.admin-toolbar input {
+    flex: 1 1 240px;
+    width: auto;
+    max-width: 360px;
+    min-width: 0;
+}
+
+.admin-note {
+    color: var(--muted);
+}
+
+.message-success {
+    background-color: var(--green-bg);
+    color: var(--green-text);
+}
+
+#admin-message {
+    margin-bottom: 16px;
+}
+
+/* Only the table scrolls sideways on a phone, never the whole page. */
+.table-wrap {
+    position: relative; /* keeps the hidden table heading inside this box */
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--surface);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.admin-table th {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table td:last-child {
+    text-align: right;
+}
+
+.button-secondary {
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: var(--surface);
+    color: var(--navy-900);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.button-secondary:hover {
+    background-color: var(--background);
+}
+
+.admin-dialog {
+    width: min(460px, calc(100% - 32px));
+    padding: 28px;
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    color: var(--ink);
+}
+
+.admin-dialog::backdrop {
+    background-color: rgb(15 36 57 / 55%);
+}
+
+.admin-dialog form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-dialog h2 {
+    margin: 0 0 4px;
+    color: var(--navy-900);
+    font-size: 1.3rem;
+}
+
+.admin-dialog label {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 /* ---------- Footer ---------- */
