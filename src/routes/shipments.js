@@ -3,6 +3,8 @@
 //   GET /api/shipments/:trackingNumber   → one shipment, 400 if badly formatted, 404 if not found
 
 import { Router } from "express";
+import { limitTrackingLookups } from "../auth/rateLimiting.js";
+import { isShipmentSaved } from "../models/savedShipments.js";
 import { TRACKING_NUMBER_PATTERN, findShipmentByTrackingNumber } from "../models/shipments.js";
 
 export const shipmentsRouter = Router();
@@ -10,7 +12,7 @@ export const shipmentsRouter = Router();
 
 // ":trackingNumber" is a placeholder: for GET /api/shipments/ST10000001,
 // req.params.trackingNumber is "ST10000001".
-shipmentsRouter.get("/:trackingNumber", (req, res) => {
+shipmentsRouter.get("/:trackingNumber", limitTrackingLookups, (req, res) => {
   // Clean up the input: remove spaces around it, make it uppercase.
   const trackingNumber = req.params.trackingNumber.trim().toUpperCase();
 
@@ -31,5 +33,6 @@ shipmentsRouter.get("/:trackingNumber", (req, res) => {
     });
   }
 
-  res.json(shipment);
+  // A logged-in customer also learns whether it's in their saved list.
+  res.json(req.user ? { ...shipment, saved: isShipmentSaved(req.user.id, trackingNumber) } : shipment);
 });

@@ -53,6 +53,8 @@ describe("the rest of the site", () => {
     ["/admin", "text/html"],
     ["/style.css", "text/css"],
     ["/theme.js", "text/javascript"],
+    ["/favicon.svg", "image/svg+xml"],
+    ["/my-shipments", "text/html"],
   ]) {
     it(`serves ${path}`, async () => {
       const response = await visitor("GET", path);

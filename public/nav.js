@@ -26,6 +26,11 @@ async function updateAccountNav() {
 
     accountNav.replaceChildren(greeting, logoutButton);
 
+    const myShipmentsLink = document.createElement("a");
+    myShipmentsLink.href = "/my-shipments";
+    myShipmentsLink.textContent = "My shipments";
+    accountNav.prepend(myShipmentsLink);
+
     // This link is only a convenience. The real protection is on the server.
     if (user.role === "admin") {
       const adminLink = document.createElement("a");

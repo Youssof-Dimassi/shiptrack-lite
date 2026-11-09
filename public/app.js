@@ -77,7 +77,52 @@ function showShipment(shipment) {
   }
 
   card.append(header, details, historyTitle, timeline);
+
+  // The server only includes "saved" for visitors who are logged in.
+  if (typeof shipment.saved === "boolean") card.append(createSaveAction(shipment));
+
   result.replaceChildren(card);
+}
+
+function createSaveAction(shipment) {
+  const box = createElement("div", "", "shipment-actions");
+
+  if (shipment.saved) {
+    box.append(createSavedLink());
+    return box;
+  }
+
+  const saveButton = createElement("button", "Save to My shipments", "button-secondary");
+  saveButton.type = "button";
+  saveButton.addEventListener("click", async () => {
+    saveButton.disabled = true;
+    try {
+      const response = await fetch("/api/my-shipments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackingNumber: shipment.trackingNumber }),
+      });
+
+      if (response.ok) {
+        box.replaceChildren(createSavedLink());
+      } else {
+        box.replaceChildren(saveButton, createElement("p", (await response.json()).error, "save-error"));
+      }
+    } catch {
+      box.replaceChildren(saveButton, createElement("p", "Could not reach the server. Please try again.", "save-error"));
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
+
+  box.append(saveButton);
+  return box;
+}
+
+function createSavedLink() {
+  const link = createElement("a", "Saved. View My shipments", "saved-link");
+  link.href = "/my-shipments";
+  return link;
 }
 
 function createElement(tag, text = "", className = "") {
@@ -103,3 +148,24 @@ function formatDate(isoDate) {
 function formatDateTime(isoDate) {
   return new Date(isoDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
+
+// --- When the page opens --------------------------------------------------
+
+// The sample number only appears when the server is in demo mode.
+async function showDemoHint() {
+  try {
+    const { demoMode } = await (await fetch("/api/config")).json();
+    document.querySelector("#demo-hint").hidden = !demoMode;
+  } catch {
+    // The hint is optional, so it's fine to leave it hidden.
+  }
+}
+
+// Links like /?track=ST10000001 open with that shipment showing.
+const trackFromUrl = new URLSearchParams(window.location.search).get("track");
+if (trackFromUrl) {
+  input.value = trackFromUrl;
+  form.requestSubmit();
+}
+
+showDemoHint();
