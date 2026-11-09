@@ -22,6 +22,7 @@ const selectSession = db.prepare(`
 
 const deleteSession = db.prepare("DELETE FROM sessions WHERE token_hash = ?");
 const deleteExpired = db.prepare("DELETE FROM sessions WHERE expires_at <= ?");
+const deleteAllForUser = db.prepare("DELETE FROM sessions WHERE user_id = ?");
 
 function hashToken(token) {
   return createHash("sha256").update(token).digest("hex");
@@ -45,4 +46,8 @@ export function findUserIdBySessionToken(token) {
 
 export function destroySession(token) {
   deleteSession.run(hashToken(token));
+}
+
+export function destroyAllSessionsForUser(userId) {
+  deleteAllForUser.run(userId);
 }

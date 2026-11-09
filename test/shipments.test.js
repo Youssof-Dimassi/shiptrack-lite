@@ -55,6 +55,9 @@ describe("the rest of the site", () => {
     ["/theme.js", "text/javascript"],
     ["/favicon.svg", "image/svg+xml"],
     ["/my-shipments", "text/html"],
+    ["/forgot-password", "text/html"],
+    ["/reset-password", "text/html"],
+    ["/confirm-email", "text/html"],
   ]) {
     it(`serves ${path}`, async () => {
       const response = await visitor("GET", path);

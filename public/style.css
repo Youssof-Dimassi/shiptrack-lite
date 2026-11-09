@@ -617,6 +617,11 @@ input::placeholder {
     margin-top: 20px;
 }
 
+.auth-note {
+    margin: 0;
+    color: var(--muted);
+}
+
 .form-hint {
     color: var(--muted);
 }
@@ -673,6 +678,24 @@ input::placeholder {
     margin: 0 0 20px;
     color: var(--heading);
     font-size: 1.75rem;
+}
+
+.confirm-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background-color: var(--amber-bg);
+    color: var(--amber-text);
+}
+
+.confirm-banner p {
+    flex: 1 1 260px;
+    margin: 0;
 }
 
 .my-add {

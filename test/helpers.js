@@ -8,6 +8,7 @@ import { once } from "node:events";
 import { after, beforeEach } from "node:test";
 
 process.env.DATABASE_PATH = ":memory:";
+process.env.EMAIL_TRANSPORT ??= "memory"; // keeps test emails from being sent or printed
 
 // These are imported here, after the line above, so they use the test database.
 const { app } = await import("../src/app.js");
