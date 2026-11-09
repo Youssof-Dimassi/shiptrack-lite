@@ -1,263 +1,540 @@
-body{
-    background-color:#f4f7fb;
-    font-family: 'Poppins', Arial, sans-serif;
-    color: #333333;
-}
-header{
-    text-align: center;
-    background-color: #1e3a5f;
+/* ShipTrack Lite styles
+ *
+ * Order: design tokens → base → header → buttons and fields → home page →
+ *        tracking result → log-in pages → footer → small screens
+ */
+
+/* ---------- Design tokens ----------
+ * Every color and common size is named once here. To change the look of the
+ * whole site, change a value in this block.
+ */
+
+:root {
+    /* Brand */
+    --navy-900: #0f2439;
+    --navy-700: #1b3a57;
+    --orange-700: #c2410c;
+    --orange-800: #9a3412;
+
+    /* Neutrals */
+    --ink: #17212e;
+    --muted: #52637a;
+    --line: #dfe5ec;
+    --surface: #ffffff;
+    --background: #f5f7fa;
+    --on-navy: #ffffff;
+    --on-navy-muted: #b8c7d9;
+
+    /* Status colors: a pale background with dark text of the same hue */
+    --blue-bg: #e4eefc;
+    --blue-text: #1c4f9c;
+    --green-bg: #e2f5e8;
+    --green-text: #17693a;
+    --amber-bg: #fdf0d8;
+    --amber-text: #7f4f00;
+    --red-bg: #fdecea;
+    --red-text: #a12622;
+
+    /* Shapes */
+    --radius: 8px;
+    --shadow: 0 1px 2px rgb(15 36 57 / 6%), 0 8px 24px rgb(15 36 57 / 8%);
+    --page-width: 1080px;
 }
 
-header h1 {
-    color: white;
-    margin: 0;
-    padding: 16px 0 8px;
+/* ---------- Base ---------- */
+
+/* border-box: an element's padding counts inside its width, not on top of it. */
+*, *::before, *::after {
+    box-sizing: border-box;
 }
-nav ul {
-    list-style: none;
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background);
+    color: var(--ink);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55;
+}
+
+main {
+    flex: 1; /* pushes the footer to the bottom on short pages */
+}
+
+h1, h2, h3, h4 {
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+/* A clear outline for people navigating with the keyboard. */
+:focus-visible {
+    outline: 3px solid var(--orange-700);
+    outline-offset: 2px;
+}
+
+.container {
+    width: 100%;
+    max-width: var(--page-width);
+    margin-inline: auto;
+    padding-inline: 20px;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 24px;
+    min-height: 64px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--navy-900);
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.brand svg {
+    width: 28px;
+    height: 28px;
+    flex: none;
+}
+
+.site-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
     margin: 0;
     padding: 0;
+    list-style: none;
 }
 
-nav li {
+.site-nav a,
+.link-button,
+.nav-greeting {
     display: inline-block;
+    padding: 8px 12px;
+    font-size: 0.95rem;
 }
 
-nav a {
+.site-nav a,
+.link-button {
+    border-radius: 6px;
+    color: var(--muted);
+    font-weight: 500;
     text-decoration: none;
-    color: white;
-    padding: 10px;
 }
 
-header h1 a {
-    color: inherit;
-    text-decoration: none;
-}
-
-nav ul {
-    padding-bottom: 12px;
+.site-nav a:hover,
+.link-button:hover {
+    background-color: var(--background);
+    color: var(--navy-900);
 }
 
 .nav-greeting {
-    color: #c9d7ea;
-    padding: 10px;
+    color: var(--ink);
+    font-weight: 600;
 }
 
-/* A button that looks like a nav link (used for "Log out"). */
+/* The "Log out" button is made to look like the other nav links. */
 .link-button {
-    background: none;
-    padding: 10px;
-    color: white;
-    font: inherit;
-    text-decoration: underline;
-}
-form {
-    text-align: center;
-    margin: 30px;
-}
-
-input {
-    padding: 12px;
-    width: 250px;
-    border: 1px solid #cccccc;
-    border-radius: 5px;
-}
-
-button {
-    padding: 12px 20px;
-    background-color: #1e3a5f;
-    color: white;
     border: none;
-    border-radius: 5px;
+    background: none;
+    font-family: inherit;
     cursor: pointer;
 }
 
+/* ---------- Buttons and fields ---------- */
+
+button[type="submit"] {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--orange-700);
+    color: white;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--orange-800);
+}
+
 button:disabled {
-    opacity: 0.6;
+    opacity: 0.65;
     cursor: wait;
 }
 
-/* ---------- Log in / Sign up forms ---------- */
+input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: var(--surface);
+    color: var(--ink);
+    font: inherit;
+}
 
-.auth-form {
-    max-width: 360px;
-    margin: 30px auto;
-    padding: 24px;
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #dde3ec;
-    text-align: left;
+input::placeholder {
+    color: var(--muted);
+}
+
+/* ---------- Home page: hero ---------- */
+
+.hero {
+    padding-block: 64px;
+    background-color: var(--navy-900);
+    color: var(--on-navy);
+    scroll-margin-top: 64px;
+}
+
+.hero-inner {
+    max-width: 720px;
+}
+
+.hero h1 {
+    margin: 0 0 12px;
+    font-size: clamp(2rem, 5vw, 2.9rem);
+}
+
+.hero-text {
+    margin: 0 0 28px;
+    color: var(--on-navy-muted);
+    font-size: 1.1rem;
+}
+
+.track-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.track-row {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.auth-form h2 {
-    margin-top: 0;
-}
-
-.auth-form label {
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-.auth-form input {
+.track-row input {
+    flex: 1 1 240px;
     width: auto;
+    min-width: 0;
+    border-color: transparent;
+    font-size: 1.05rem;
 }
 
-.auth-form button {
-    margin-top: 16px;
+.track-row button {
+    flex: 0 0 auto;
 }
 
-.form-hint {
-    color: #666666;
-}
-
-.form-error {
-    background-color: #fdecea;
-    color: #a12622;
-    padding: 10px;
-    border-radius: 5px;
+.track-hint {
     margin: 10px 0 0;
+    color: var(--on-navy-muted);
+    font-size: 0.9rem;
 }
 
-.form-switch {
-    text-align: center;
-    color: #666666;
-    margin-bottom: 0;
+.track-hint code {
+    color: var(--on-navy);
+    font-family: inherit;
+    font-weight: 600;
+}
+
+/* ---------- Home page: features ---------- */
+
+.features {
+    padding-block: 64px;
+    scroll-margin-top: 64px;
+}
+
+.features h2 {
+    margin: 0 0 28px;
+    color: var(--navy-900);
+    font-size: 1.75rem;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.feature {
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--orange-700);
+    border-radius: var(--radius);
+    background-color: var(--surface);
+}
+
+.feature h3 {
+    margin: 0 0 8px;
+    color: var(--navy-900);
+    font-size: 1.1rem;
+}
+
+.feature p {
+    margin: 0;
+    color: var(--muted);
 }
 
 /* ---------- Tracking result ---------- */
 
 #result {
-    max-width: 600px;
-    margin: 0 auto 30px;
+    margin-top: 24px;
+}
+
+/* Take up no space until there is something to show. */
+#result:empty {
+    display: none;
 }
 
 .message {
-    text-align: center;
-    padding: 12px;
-    border-radius: 5px;
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 6px;
 }
 
 .message-loading {
-    color: #666666;
+    color: var(--on-navy-muted);
 }
 
 .message-error {
-    background-color: #fdecea;
-    color: #a12622;
+    background-color: var(--red-bg);
+    color: var(--red-text);
 }
 
 .shipment-card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #dde3ec;
+    padding: 24px;
+    border-radius: var(--radius);
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+    color: var(--ink);
 }
 
 .shipment-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
 }
 
 .shipment-header h3 {
     margin: 0;
-    color: #1e3a5f;
+    color: var(--navy-900);
+    font-size: 1.25rem;
 }
 
 .status {
     padding: 4px 12px;
     border-radius: 999px;
-    font-size: 0.85em;
-    font-weight: bold;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
-.status-in-transit { background-color: #e3f0ff; color: #1a5fb4; }
-.status-delivered  { background-color: #e6f6ea; color: #1e7a3a; }
-.status-pending    { background-color: #fff4e0; color: #8a5300; }
+.status-in-transit { background-color: var(--blue-bg); color: var(--blue-text); }
+.status-delivered  { background-color: var(--green-bg); color: var(--green-text); }
+.status-pending    { background-color: var(--amber-bg); color: var(--amber-text); }
 
 .shipment-details {
     display: grid;
     grid-template-columns: max-content 1fr;
-    gap: 6px 16px;
-    margin: 20px 0;
+    gap: 6px 20px;
+    margin: 16px 0 24px;
 }
 
 .shipment-details dt {
-    color: #666666;
+    color: var(--muted);
 }
 
 .shipment-details dd {
     margin: 0;
+    font-weight: 500;
 }
 
 .shipment-card h4 {
-    color: #1e3a5f;
-    margin-bottom: 10px;
+    margin: 0 0 12px;
+    color: var(--navy-900);
 }
 
 .timeline {
-    list-style: none;
     margin: 0;
-    padding: 0 0 0 20px;
-    border-left: 2px solid #dde3ec;
+    padding: 0;
+    list-style: none;
 }
 
+/* Each event gets a dot, and a line that runs down to the next event. */
 .timeline li {
-    margin-bottom: 14px;
+    position: relative;
+    padding: 0 0 18px 24px;
+    border-left: 2px solid var(--line);
+    margin-left: 6px;
+}
+
+.timeline li:last-child {
+    padding-bottom: 0;
+    border-left-color: transparent;
+}
+
+.timeline li::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: -7px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--line);
+}
+
+/* The newest event is first in the list. */
+.timeline li:first-child::before {
+    background-color: var(--orange-700);
 }
 
 .timeline strong {
     display: block;
+    font-weight: 600;
 }
 
 .timeline span {
-    color: #666666;
-    font-size: 0.9em;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
-section {
-    background-color: white;
-    margin: 20px;
-    padding: 20px;
-    border-radius: 8px;
+
+/* ---------- Log-in and sign-up pages ---------- */
+
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* keep the card only as tall as its content */
+    padding: 48px 20px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 400px;
+    padding: 32px;
+    border-radius: var(--radius);
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.auth-form h1 {
+    margin: 0 0 8px;
+    color: var(--navy-900);
+    font-size: 1.6rem;
+}
+
+.auth-form label {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.auth-form button {
+    margin-top: 20px;
+}
+
+.form-hint {
+    color: var(--muted);
+}
+
+.form-error {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background-color: var(--red-bg);
+    color: var(--red-text);
+    font-size: 0.95rem;
+}
+
+.form-switch {
+    margin: 16px 0 0;
+    color: var(--muted);
     text-align: center;
 }
 
-section h3 {
-    color: #1e3a5f;
+.form-switch a {
+    color: var(--orange-700);
+    font-weight: 600;
 }
 
-section p {
-    color: #666666;
-}
-main {
-    max-width: 900px;
-    margin: 30px auto;
-    padding: 20px;
+/* ---------- Footer ---------- */
+
+.site-footer {
+    padding-block: 24px;
+    border-top: 1px solid var(--line);
+    background-color: var(--surface);
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
-h2 {
-    text-align: center;
-    color: #1e3a5f;
+.site-footer p {
+    margin: 0;
 }
+
+/* ---------- Small screens ---------- */
+
 @media (max-width: 600px) {
-    main {
-        padding: 10px;
+    .header-inner {
+        padding-block: 10px;
     }
 
-    input {
-        width: 90%;
+    .site-nav a,
+    .link-button,
+    .nav-greeting {
+        padding-inline: 8px;
     }
 
-    button {
-        margin-top: 10px;
+    .hero,
+    .features {
+        padding-block: 40px;
     }
 
-    section {
-        margin: 10px 0;
+    /* The header wraps to two rows here, so it stops following the scroll. */
+    .site-header {
+        position: static;
+    }
+
+    .track-row button {
+        flex: 1 1 100%;
+    }
+
+    .shipment-card,
+    .auth-form {
+        padding: 20px;
+    }
+
+    .auth-page {
+        padding-block: 24px;
     }
 }
