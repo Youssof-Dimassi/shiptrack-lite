@@ -4,22 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log in · ShipTrack Lite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="style.css">
     <script src="account.js" defer></script>
 </head>
 <body>
-    <header>
-        <h1><a href="/">ShipTrack Lite</a></h1>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/register">Sign up</a></li>
-            </ul>
-        </nav>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="/">
+                <svg viewBox="0 0 28 28" aria-hidden="true">
+                    <rect width="28" height="28" rx="6" fill="#0f2439"/>
+                    <path d="M14 6l7 4v8l-7 4-7-4v-8z M7 10l7 4 7-4 M14 14v8" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
+                ShipTrack Lite
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/register">Sign up</a></li>
+                </ul>
+            </nav>
+        </div>
     </header>
-    <main>
+
+    <main class="auth-page">
         <form id="login-form" class="auth-form">
-            <h2>Log in</h2>
+            <h1>Log in</h1>
 
             <label for="email">Email</label>
             <input type="email" id="email" name="email" autocomplete="email" required>
@@ -34,8 +46,11 @@
             <p class="form-switch">No account yet? <a href="/register">Sign up</a></p>
         </form>
     </main>
-    <footer>
-        <p>&copy; 2026 ShipTrack Lite</p>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 ShipTrack Lite</p>
+        </div>
     </footer>
 </body>
 </html>
