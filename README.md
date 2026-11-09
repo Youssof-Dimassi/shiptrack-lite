@@ -21,6 +21,7 @@ shiptrack-lite/
 │   ├── style.css
 │   ├── app.js             Tracking form: calls the API, shows the result
 │   ├── account.js         Log-in and sign-up forms
+│   ├── theme.js           Light and dark mode
 │   └── nav.js             Shows "Log in" or "Hi, <name> · Log out"
 ├── src/             Server code (runs on the server, never sent to the browser)
 │   ├── server.js          Creates the app and connects all the pieces

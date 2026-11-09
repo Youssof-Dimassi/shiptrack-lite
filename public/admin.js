@@ -10,6 +10,8 @@ const messageBox = document.querySelector("#admin-message");
 const rows = document.querySelector("#shipment-rows");
 const noShipments = document.querySelector("#no-shipments");
 const search = document.querySelector("#search");
+const title = document.querySelector("#admin-title");
+const statusFilters = document.querySelector("#status-filters");
 
 const createDialog = document.querySelector("#create-dialog");
 const createForm = document.querySelector("#create-form");
@@ -20,6 +22,8 @@ const statusSelect = document.querySelector("#status");
 
 let shipments = [];
 let updatingTrackingNumber = null;
+let activeStatus = null; // null means "All shipments"
+const filters = []; // one entry per sidebar button
 
 // --- Loading --------------------------------------------------------------
 
@@ -53,6 +57,7 @@ async function loadShipments() {
   const data = await response.json();
   shipments = data.shipments;
   fillStatusOptions(data.statuses);
+  buildFilters(data.statuses);
   renderRows();
   app.hidden = false;
 }
@@ -67,11 +72,53 @@ function fillStatusOptions(statuses) {
   );
 }
 
+// --- Sidebar filters ------------------------------------------------------
+
+// The buttons are built once and then only updated, so a keyboard user's
+// focus stays on the button they just pressed.
+function buildFilters(statuses) {
+  for (const status of [null, ...statuses]) {
+    const dot = document.createElement("span");
+    dot.className = status ? `filter-dot dot-${toCssName(status)}` : "filter-dot";
+
+    const count = document.createElement("span");
+    count.className = "filter-count";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "filter";
+    button.append(dot, status ?? "All shipments", count);
+    button.addEventListener("click", () => {
+      activeStatus = status;
+      renderRows();
+    });
+
+    const item = document.createElement("li");
+    item.append(button);
+    statusFilters.append(item);
+    filters.push({ status, button, count });
+  }
+}
+
+function updateFilters() {
+  for (const { status, button, count } of filters) {
+    count.textContent = status ? shipments.filter((s) => s.status === status).length : shipments.length;
+    button.setAttribute("aria-pressed", String(status === activeStatus));
+  }
+  title.textContent = activeStatus ?? "All shipments";
+}
+
+// "In Transit" → "in-transit" (used to pick a color in CSS)
+function toCssName(text) {
+  return text.toLowerCase().replaceAll(" ", "-");
+}
+
 // --- Table ----------------------------------------------------------------
 
 function renderRows() {
   const query = search.value.trim().toLowerCase();
   const visible = shipments.filter((shipment) =>
+    (!activeStatus || shipment.status === activeStatus) &&
     [shipment.trackingNumber, shipment.status, shipment.origin, shipment.destination]
       .join(" ")
       .toLowerCase()
@@ -80,6 +127,7 @@ function renderRows() {
 
   rows.replaceChildren(...visible.map(createRow));
   noShipments.hidden = visible.length > 0;
+  updateFilters();
 }
 
 // Built with textContent, so anything typed into a shipment stays plain text.
@@ -87,7 +135,7 @@ function createRow(shipment) {
   const row = document.createElement("tr");
 
   const badge = document.createElement("span");
-  badge.className = `status status-${shipment.status.toLowerCase().replaceAll(" ", "-")}`;
+  badge.className = `status status-${toCssName(shipment.status)}`;
   badge.textContent = shipment.status;
 
   const updateButton = document.createElement("button");

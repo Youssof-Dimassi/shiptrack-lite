@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin · ShipTrack Lite</title>
+    <script src="theme.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
@@ -13,7 +14,7 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="container header-inner">
+        <div class="container admin-container header-inner">
             <a class="brand" href="/">
                 <svg viewBox="0 0 28 28" aria-hidden="true">
                     <rect width="28" height="28" rx="6" fill="#0f2439"/>
@@ -31,36 +32,42 @@
     </header>
 
     <main class="admin-page">
-        <div class="container">
-            <h1>Shipments</h1>
-
+        <div class="container admin-container">
             <p id="admin-loading" class="admin-note">Loading…</p>
             <p id="admin-denied" class="message message-error" hidden>This page is for ShipTrack staff only.</p>
 
-            <div id="admin-app" hidden>
-                <div id="admin-message" aria-live="polite"></div>
+            <div id="admin-app" class="admin-layout" hidden>
+                <aside class="admin-sidebar" aria-label="Filter shipments by status">
+                    <p class="sidebar-title">Status</p>
+                    <ul id="status-filters" class="filter-list"></ul>
+                </aside>
 
-                <div class="admin-toolbar">
-                    <input type="search" id="search" placeholder="Search shipments" aria-label="Search shipments">
-                    <button type="button" id="new-shipment" class="button-primary">New shipment</button>
-                </div>
+                <div>
+                    <h1 id="admin-title">All shipments</h1>
+                    <div id="admin-message" aria-live="polite"></div>
 
-                <div class="table-wrap">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Tracking number</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">From</th>
-                                <th scope="col">To</th>
-                                <th scope="col">Estimated delivery</th>
-                                <th scope="col"><span class="visually-hidden">Actions</span></th>
-                            </tr>
-                        </thead>
-                        <tbody id="shipment-rows"></tbody>
-                    </table>
+                    <div class="admin-toolbar">
+                        <input type="search" id="search" placeholder="Search shipments" aria-label="Search shipments">
+                        <button type="button" id="new-shipment" class="button-primary">New shipment</button>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Tracking number</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">From</th>
+                                    <th scope="col">To</th>
+                                    <th scope="col">Estimated delivery</th>
+                                    <th scope="col"><span class="visually-hidden">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="shipment-rows"></tbody>
+                        </table>
+                    </div>
+                    <p id="no-shipments" class="admin-note" hidden>No shipments to show.</p>
                 </div>
-                <p id="no-shipments" class="admin-note" hidden>No shipments match your search.</p>
             </div>
         </div>
     </main>
@@ -111,7 +118,7 @@
     </dialog>
 
     <footer class="site-footer">
-        <div class="container">
+        <div class="container admin-container">
             <p>&copy; 2026 ShipTrack Lite</p>
         </div>
     </footer>

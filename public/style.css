@@ -1,7 +1,7 @@
 /* ShipTrack Lite styles
  *
  * Order: design tokens → base → header → buttons and fields → home page →
- *        tracking result → log-in pages → footer → small screens
+ *        tracking result → log-in pages → admin → theme toggle → footer → small screens
  */
 
 /* ---------- Design tokens ----------
@@ -10,22 +10,32 @@
  */
 
 :root {
-    /* Brand */
-    --navy-900: #0f2439;
-    --navy-700: #1b3a57;
-    --orange-700: #c2410c;
-    --orange-800: #9a3412;
+    color-scheme: light; /* also themes scrollbars, date pickers, and dropdowns */
 
-    /* Neutrals */
+    /* Brand */
+    --heading: #0f2439;
+    --accent-text: #c2410c;
+    --accent-soft: #fdeee6;
+    --button-bg: #c2410c;
+    --button-hover: #9a3412;
+    --logo-bg: #0f2439;
+
+    /* Surfaces and text */
     --ink: #17212e;
     --muted: #52637a;
     --line: #dfe5ec;
     --surface: #ffffff;
     --background: #f5f7fa;
-    --on-navy: #ffffff;
-    --on-navy-muted: #b8c7d9;
 
-    /* Status colors: a pale background with dark text of the same hue */
+    /* The big section at the top of the home page */
+    --hero-bg: radial-gradient(70% 130% at 88% 0%, #24496f 0%, transparent 62%), #0f2439;
+    --on-hero: #ffffff;
+    --on-hero-muted: #b8c7d9;
+    --hero-input-border: transparent;
+    --route-line: #5b7690;
+    --route-progress: #fb923c;
+
+    /* Status colors: a soft background with readable text of the same hue */
     --blue-bg: #e4eefc;
     --blue-text: #1c4f9c;
     --green-bg: #e2f5e8;
@@ -41,11 +51,48 @@
     --page-width: 1080px;
 }
 
+/* Dark mode only changes token values. No other rule needs to know about it. */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --heading: #f2f6fb;
+    --accent-text: #fb923c;
+    --accent-soft: #3a2116;
+    --logo-bg: #c2410c;
+
+    --ink: #e4ebf3;
+    --muted: #9aabc0;
+    --line: #2a3a50;
+    --surface: #152133;
+    --background: #0c1522;
+
+    --hero-bg: radial-gradient(70% 130% at 88% 0%, #3a2a2c 0%, transparent 62%), #101c2d;
+    --on-hero-muted: #a9b9cc;
+    --hero-input-border: #34465e;
+    --route-line: #52667e;
+
+    --blue-bg: #17315a;
+    --blue-text: #b3cdfa;
+    --green-bg: #123a2a;
+    --green-text: #8ee3b0;
+    --amber-bg: #3f2e0b;
+    --amber-text: #f6cc7c;
+    --red-bg: #431a1c;
+    --red-text: #fcb0ab;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 12px 32px rgb(0 0 0 / 35%);
+}
+
 /* ---------- Base ---------- */
 
 /* border-box: an element's padding counts inside its width, not on top of it. */
 *, *::before, *::after {
     box-sizing: border-box;
+}
+
+/* Makes the hidden attribute win, even on elements that set their own display. */
+[hidden] {
+    display: none !important;
 }
 
 html {
@@ -74,7 +121,7 @@ h1, h2, h3, h4 {
 
 /* A clear outline for people navigating with the keyboard. */
 :focus-visible {
-    outline: 3px solid var(--orange-700);
+    outline: 3px solid var(--accent-text);
     outline-offset: 2px;
 }
 
@@ -118,10 +165,14 @@ h1, h2, h3, h4 {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.15rem;
     font-weight: 700;
     text-decoration: none;
+}
+
+.brand svg rect {
+    fill: var(--logo-bg);
 }
 
 .brand svg {
@@ -159,7 +210,7 @@ h1, h2, h3, h4 {
 .site-nav a:hover,
 .link-button:hover {
     background-color: var(--background);
-    color: var(--navy-900);
+    color: var(--heading);
 }
 
 .nav-greeting {
@@ -182,7 +233,7 @@ button[type="submit"] {
     padding: 12px 22px;
     border: none;
     border-radius: 6px;
-    background-color: var(--orange-700);
+    background-color: var(--button-bg);
     color: white;
     font: inherit;
     font-weight: 600;
@@ -192,7 +243,7 @@ button[type="submit"] {
 
 .button-primary:hover,
 button[type="submit"]:hover {
-    background-color: var(--orange-800);
+    background-color: var(--button-hover);
 }
 
 button:disabled {
@@ -219,8 +270,10 @@ input::placeholder {
 
 .hero {
     padding-block: 64px;
-    background-color: var(--navy-900);
-    color: var(--on-navy);
+    background: var(--hero-bg);
+    color: var(--on-hero);
+    position: relative;
+    overflow: hidden;
     scroll-margin-top: 64px;
 }
 
@@ -233,9 +286,87 @@ input::placeholder {
     font-size: clamp(2rem, 5vw, 2.9rem);
 }
 
+/* A small shipment journey drawn beside the tracking form. */
+.hero-route {
+    display: none;
+    position: absolute;
+    top: 72px;
+    right: max(20px, calc((100% - var(--page-width)) / 2 + 20px));
+    width: 300px;
+}
+
+@media (min-width: 1100px) {
+    .hero-route {
+        display: block;
+    }
+}
+
+.route-base,
+.route-progress {
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: 3;
+}
+
+.route-base {
+    stroke: var(--route-line);
+    stroke-dasharray: 2 9;
+}
+
+.route-progress {
+    stroke: var(--route-progress);
+    stroke-dasharray: 50 100;
+    animation: route-draw 1.4s ease-out both;
+}
+
+@keyframes route-draw {
+    from { stroke-dashoffset: 50; }
+    to { stroke-dashoffset: 0; }
+}
+
+.route-stop {
+    fill: var(--route-line);
+}
+
+.route-stop-done,
+.route-stop-now {
+    fill: var(--route-progress);
+}
+
+.route-pulse {
+    fill: none;
+    stroke: var(--route-progress);
+    stroke-width: 2;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: route-pulse 2.4s ease-out infinite;
+}
+
+@keyframes route-pulse {
+    from { transform: scale(0.6); opacity: 0.9; }
+    to { transform: scale(2); opacity: 0; }
+}
+
+.hero-route text {
+    fill: var(--on-hero-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .route-progress,
+    .route-pulse {
+        animation: none;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
 .hero-text {
     margin: 0 0 28px;
-    color: var(--on-navy-muted);
+    color: var(--on-hero-muted);
     font-size: 1.1rem;
 }
 
@@ -255,7 +386,7 @@ input::placeholder {
     flex: 1 1 240px;
     width: auto;
     min-width: 0;
-    border-color: transparent;
+    border-color: var(--hero-input-border);
     font-size: 1.05rem;
 }
 
@@ -265,12 +396,12 @@ input::placeholder {
 
 .track-hint {
     margin: 10px 0 0;
-    color: var(--on-navy-muted);
+    color: var(--on-hero-muted);
     font-size: 0.9rem;
 }
 
 .track-hint code {
-    color: var(--on-navy);
+    color: var(--on-hero);
     font-family: inherit;
     font-weight: 600;
 }
@@ -284,7 +415,7 @@ input::placeholder {
 
 .features h2 {
     margin: 0 0 28px;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.75rem;
 }
 
@@ -297,14 +428,14 @@ input::placeholder {
 .feature {
     padding: 24px;
     border: 1px solid var(--line);
-    border-top: 3px solid var(--orange-700);
+    border-top: 3px solid var(--accent-text);
     border-radius: var(--radius);
     background-color: var(--surface);
 }
 
 .feature h3 {
     margin: 0 0 8px;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.1rem;
 }
 
@@ -331,7 +462,7 @@ input::placeholder {
 }
 
 .message-loading {
-    color: var(--on-navy-muted);
+    color: var(--on-hero-muted);
 }
 
 .message-error {
@@ -359,7 +490,7 @@ input::placeholder {
 
 .shipment-header h3 {
     margin: 0;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.25rem;
 }
 
@@ -394,7 +525,7 @@ input::placeholder {
 
 .shipment-card h4 {
     margin: 0 0 12px;
-    color: var(--navy-900);
+    color: var(--heading);
 }
 
 .timeline {
@@ -429,7 +560,7 @@ input::placeholder {
 
 /* The newest event is first in the list. */
 .timeline li:first-child::before {
-    background-color: var(--orange-700);
+    background-color: var(--accent-text);
 }
 
 .timeline strong {
@@ -465,7 +596,7 @@ input::placeholder {
 
 .auth-form h1 {
     margin: 0 0 8px;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.6rem;
 }
 
@@ -499,11 +630,123 @@ input::placeholder {
 }
 
 .form-switch a {
-    color: var(--orange-700);
+    color: var(--accent-text);
     font-weight: 600;
 }
 
 /* ---------- Admin dashboard ---------- */
+
+.admin-container {
+    max-width: 1280px;
+}
+
+/* The sidebar and the shipments, side by side. */
+.admin-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.admin-sidebar {
+    position: sticky;
+    top: 88px;
+}
+
+.sidebar-title {
+    margin: 0 0 8px;
+    padding-inline: 12px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.filter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.filter:hover {
+    background-color: var(--line);
+}
+
+.filter[aria-pressed="true"] {
+    background-color: var(--accent-soft);
+    color: var(--accent-text);
+    font-weight: 600;
+}
+
+.filter-count {
+    margin-left: auto;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.filter-dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: var(--muted);
+}
+
+.dot-in-transit,
+.dot-out-for-delivery { background-color: var(--blue-text); }
+.dot-delivered { background-color: var(--green-text); }
+.dot-pending { background-color: var(--amber-text); }
+.dot-cancelled { background-color: var(--red-text); }
+
+/* On tablets and phones the sidebar becomes a row of filters above the table. */
+@media (max-width: 860px) {
+    .admin-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .admin-sidebar {
+        position: static;
+    }
+
+    .sidebar-title {
+        display: none;
+    }
+
+    .filter-list {
+        flex-direction: row;
+        gap: 6px;
+        padding-bottom: 6px;
+        overflow-x: auto;
+    }
+
+    .filter {
+        width: auto;
+        white-space: nowrap;
+    }
+
+    .filter-count {
+        margin-left: 2px;
+    }
+}
 
 .admin-page {
     padding-block: 40px;
@@ -511,7 +754,7 @@ input::placeholder {
 
 .admin-page h1 {
     margin: 0 0 20px;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.75rem;
 }
 
@@ -584,7 +827,7 @@ input::placeholder {
     border: 1px solid var(--line);
     border-radius: 6px;
     background-color: var(--surface);
-    color: var(--navy-900);
+    color: var(--heading);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -595,6 +838,7 @@ input::placeholder {
 }
 
 .admin-dialog {
+    background-color: var(--surface);
     width: min(460px, calc(100% - 32px));
     padding: 28px;
     border: none;
@@ -615,7 +859,7 @@ input::placeholder {
 
 .admin-dialog h2 {
     margin: 0 0 4px;
-    color: var(--navy-900);
+    color: var(--heading);
     font-size: 1.3rem;
 }
 
@@ -630,6 +874,58 @@ input::placeholder {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+}
+
+/* ---------- Theme toggle ---------- */
+
+.theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    margin-left: 4px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.theme-toggle:hover {
+    background-color: var(--background);
+    color: var(--heading);
+}
+
+.theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* The button shows the theme you would switch TO. */
+.icon-sun,
+:root[data-theme="dark"] .icon-moon {
+    display: none;
+}
+
+:root[data-theme="dark"] .icon-sun {
+    display: block;
+}
+
+/* The theme change animation in theme.js replaces the browser's fade. */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+    z-index: 1;
 }
 
 /* ---------- Footer ---------- */
