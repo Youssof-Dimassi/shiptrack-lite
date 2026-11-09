@@ -18,6 +18,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadUser } from "./auth/middleware.js";
 import { demoMode, isProduction } from "./config.js";
+import { accountRouter } from "./routes/account.js";
 import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { myShipmentsRouter } from "./routes/myShipments.js";
@@ -84,6 +85,7 @@ app.get("/api/config", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/auth", accountRouter);
 app.use("/api/my-shipments", myShipmentsRouter);
 app.use("/api/shipments", shipmentsRouter);
 app.use("/api/admin", adminRouter);

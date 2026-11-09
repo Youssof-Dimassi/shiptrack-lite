@@ -80,6 +80,15 @@ db.exec(`
     PRIMARY KEY (user_id, shipment_id)
   );
 
+  -- One-time links sent by email. Only a hash of each token is kept.
+  CREATE TABLE IF NOT EXISTS account_tokens (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    token_hash TEXT    NOT NULL UNIQUE,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    purpose    TEXT    NOT NULL CHECK (purpose IN ('password_reset', 'email_confirmation')),
+    expires_at TEXT    NOT NULL
+  );
+
   -- One row per logged-in browser.
   -- token_hash is a hash of the secret stored in the user's cookie, so a
   -- stolen copy of the database can't be used to log in as anyone.
@@ -102,6 +111,25 @@ export function runInTransaction(work) {
     db.exec("ROLLBACK");
     throw error;
   }
+}
+
+// --- Upgrades ---------------------------------------------------------------
+//
+// "CREATE TABLE IF NOT EXISTS" can't add a column to a table that already
+// exists, so changes to existing tables are listed here, in order. The database
+// remembers how many it has applied (user_version), so each one runs only once.
+// Never edit or remove an entry: add a new one at the end.
+const MIGRATIONS = [
+  "ALTER TABLE users ADD COLUMN email_confirmed_at TEXT",
+];
+
+const { user_version: appliedMigrations } = db.prepare("PRAGMA user_version").get();
+
+for (let index = appliedMigrations; index < MIGRATIONS.length; index += 1) {
+  runInTransaction(() => {
+    db.exec(MIGRATIONS[index]);
+    db.exec(`PRAGMA user_version = ${index + 1}`);
+  });
 }
 
 // In demo mode, fill an empty database with sample shipments.

@@ -7,6 +7,7 @@
 
 import { Router } from "express";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
+import { sendConfirmationEmail } from "../email/accountEmails.js";
 import { SESSION_COOKIE, readCookie, requireAuth } from "../auth/middleware.js";
 import { sendTooManyAttempts } from "../auth/rateLimiting.js";
 import { consumeAttempt, refundAttempt, resetAttempts } from "../models/rateLimits.js";
@@ -16,8 +17,8 @@ import { createUser, findUserByEmailWithPassword } from "../models/users.js";
 export const authRouter = Router();
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 8;
-const MAX_PASSWORD_LENGTH = 128;
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 128;
 const MAX_EMAIL_LENGTH = 254;
 
 // A real hash of a random password. Used when the email doesn't exist so that
@@ -31,7 +32,7 @@ const MINUTE = 60 * 1000;
 // Failed log-ins are limited two ways. An account is only limited together
 // with the address it's being tried from: if the email alone were enough,
 // anyone could lock a real customer out just by typing their email wrong.
-function loginLimits(ip, email) {
+export function loginLimits(ip, email) {
   return {
     account: { key: `login:account:${ip}:${email}`, limit: 5, windowMs: 15 * MINUTE }, // guessing one password
     ip: { key: `login:ip:${ip}`, limit: 30, windowMs: 15 * MINUTE }, // trying many accounts
@@ -72,8 +73,10 @@ authRouter.post("/register", async (req, res) => {
   const passwordHash = await hashPassword(password);
   const userId = createUser({ name, email, passwordHash });
 
+  sendConfirmationEmail({ id: userId, name, email });
+
   startSession(res, userId);
-  res.status(201).json({ user: { id: userId, name, email, role: "customer" } }); // 201 = Created
+  res.status(201).json({ user: { id: userId, name, email, role: "customer", emailConfirmed: false } }); // 201 = Created
 });
 
 // --- Log in -----------------------------------------------------------------
@@ -106,7 +109,15 @@ authRouter.post("/login", async (req, res) => {
   refundAttempt(limits.ip.key);
 
   startSession(res, user.id);
-  res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  res.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      emailConfirmed: Boolean(user.email_confirmed_at),
+    },
+  });
 });
 
 // --- Log out ----------------------------------------------------------------

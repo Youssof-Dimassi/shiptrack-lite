@@ -19,6 +19,8 @@ shiptrack-lite/
 │   ├── admin.html         Staff dashboard
 │   ├── admin.js           Dashboard behavior
 │   ├── register.html      Sign-up page
+│   ├── forgot-password.html, reset-password.html, password.js   Password reset
+│   ├── confirm-email.html, confirm-email.js                     Email confirmation
 │   ├── my-shipments.html  A customer's saved shipments
 │   ├── my-shipments.js    Behavior of that page
 │   ├── style.css
@@ -32,6 +34,7 @@ shiptrack-lite/
 │   ├── server.js          Starts the app
 │   ├── routes/            Which URL does what
 │   │   ├── auth.js        Register, log in, log out, "who am I?"
+│   │   ├── account.js     Password reset and email confirmation
 │   │   ├── admin.js       Staff-only shipment management
 │   │   ├── myShipments.js A customer's saved shipments
 │   │   └── shipments.js   Shipment lookup
@@ -42,12 +45,14 @@ shiptrack-lite/
 │   ├── db/
 │   │   ├── database.js    Opens the SQLite database and creates the tables
 │   │   └── seed.js        Sample shipments, inserted on first run
+│   ├── email/             Sending email and what the emails say
 │   ├── scripts/
 │   │   └── make-admin.js  Grants admin rights from the terminal
 │   └── models/            SQL queries
 │       ├── shipments.js
 │       ├── users.js
 │       ├── sessions.js
+│       ├── accountTokens.js
 │       ├── savedShipments.js
 │       └── rateLimits.js
 ├── test/            Automated tests (run with npm test)
@@ -97,6 +102,10 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/auth/login` | Log in `{ email, password }` |
 | `POST /api/auth/logout` | Log out |
 | `GET /api/auth/me` | The logged-in user, or `401` |
+| `POST /api/auth/forgot-password` | Email a reset link `{ email }` |
+| `POST /api/auth/reset-password` | Set a new password `{ token, password }` |
+| `POST /api/auth/confirm-email` | Confirm an email address `{ token }` |
+| `POST /api/auth/resend-confirmation` | Email a new confirmation link |
 | `GET /my-shipments` | A customer's saved shipments |
 | `GET /api/my-shipments` | The logged-in customer's saved shipments |
 | `POST /api/my-shipments` | Save a shipment `{ trackingNumber }` |
@@ -134,11 +143,18 @@ Admin rights can only be granted from the terminal, never from the website.
 | Failed log-ins from one address, across all accounts | 30 per 15 minutes |
 | Sign-up attempts from one address | 20 per hour |
 | Tracking number lookups from one address | 60 per minute |
+| Password reset requests from one address | 10 per hour |
+| Password reset emails to one account | 3 per hour |
 
 Blocked requests get a `429` response with a `Retry-After` header.
 
 When the app runs behind a proxy, set the `TRUST_PROXY` environment variable to the
 number of proxies so the limits use each visitor's real address. Leave it unset otherwise.
+
+### Email while developing
+
+Without `SMTP_URL`, emails are printed in the terminal, so you can copy links from there.
+In production without `SMTP_URL`, emails are not sent or printed, because they contain private links.
 
 ### Environment variables
 
@@ -148,6 +164,9 @@ number of proxies so the limits use each visitor's real address. Leave it unset 
 | `NODE_ENV` | Set to `production` when deployed: enables HTTPS-only cookies and headers | not set |
 | `DATABASE_PATH` | Where the database file lives | `shiptrack.db` |
 | `TRUST_PROXY` | How many proxies sit in front of the app | `0` |
+| `APP_URL` | The site's public address, used for links in emails | `http://localhost:3000` |
+| `SMTP_URL` | The mail server, e.g. `smtp://user:password@host:587` | not set |
+| `EMAIL_FROM` | The sender shown on emails | `ShipTrack Lite <no-reply@shiptrack.example>` |
 | `SEED_DEMO_DATA` | `true` or `false` to override demo mode | on, except in production |
 
 ### Testing

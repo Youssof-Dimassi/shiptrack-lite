@@ -130,4 +130,34 @@ function showAddError(message) {
   addError.hidden = false;
 }
 
+// --- Reminder to confirm the email address ----------------------------------
+
+const confirmBanner = document.querySelector("#confirm-banner");
+const confirmBannerText = document.querySelector("#confirm-banner-text");
+const resendButton = document.querySelector("#resend-confirmation");
+
+async function showConfirmReminder() {
+  try {
+    const response = await fetch("/api/auth/me");
+    if (!response.ok) return;
+    confirmBanner.hidden = (await response.json()).user.emailConfirmed;
+  } catch {
+    // It's only a reminder, so it's fine to skip it.
+  }
+}
+
+resendButton.addEventListener("click", async () => {
+  resendButton.disabled = true;
+  try {
+    const response = await fetch("/api/auth/resend-confirmation", { method: "POST" });
+    const data = await response.json();
+    confirmBannerText.textContent = data.message ?? data.error;
+  } catch {
+    confirmBannerText.textContent = "Could not reach the server. Please try again.";
+  } finally {
+    resendButton.disabled = false;
+  }
+});
+
 loadSavedShipments();
+showConfirmReminder();
