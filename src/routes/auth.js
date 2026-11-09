@@ -8,6 +8,7 @@
 import { Router } from "express";
 import { hashPassword, verifyPassword } from "../auth/passwords.js";
 import { SESSION_COOKIE, readCookie, requireAuth } from "../auth/middleware.js";
+import { consumeAttempt, refundAttempt, resetAttempts } from "../models/rateLimits.js";
 import { SESSION_DURATION_MS, createSession, destroySession } from "../models/sessions.js";
 import { createUser, findUserByEmailWithPassword } from "../models/users.js";
 
@@ -16,14 +17,45 @@ export const authRouter = Router();
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 128;
+const MAX_EMAIL_LENGTH = 254;
 
 // A real hash of a random password. Used when the email doesn't exist so that
 // "wrong email" takes as long as "wrong password" (see the login route).
 const DUMMY_HASH = await hashPassword("not-a-real-password-" + Math.random());
 
+// --- Rate limits ------------------------------------------------------------
+
+const MINUTE = 60 * 1000;
+
+// Failed log-ins are limited two ways. An account is only limited together
+// with the address it's being tried from: if the email alone were enough,
+// anyone could lock a real customer out just by typing their email wrong.
+function loginLimits(ip, email) {
+  return {
+    account: { key: `login:account:${ip}:${email}`, limit: 5, windowMs: 15 * MINUTE }, // guessing one password
+    ip: { key: `login:ip:${ip}`, limit: 30, windowMs: 15 * MINUTE }, // trying many accounts
+  };
+}
+
+function registerLimit(ip) {
+  return { key: `register:ip:${ip}`, limit: 20, windowMs: 60 * MINUTE };
+}
+
+// 429 means "too many requests". Retry-After tells the caller how long to wait.
+function sendTooManyAttempts(res, retryAfterSeconds) {
+  const minutes = Math.ceil(retryAfterSeconds / 60);
+  res.set("Retry-After", String(retryAfterSeconds));
+  res.status(429).json({
+    error: `Too many attempts. Please try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`,
+  });
+}
+
 // --- Register ---------------------------------------------------------------
 
 authRouter.post("/register", async (req, res) => {
+  const attempt = consumeAttempt([registerLimit(req.ip)]);
+  if (!attempt.allowed) return sendTooManyAttempts(res, attempt.retryAfterSeconds);
+
   const name = cleanText(req.body?.name);
   const email = cleanText(req.body?.email).toLowerCase();
   const password = typeof req.body?.password === "string" ? req.body.password : "";
@@ -32,7 +64,7 @@ authRouter.post("/register", async (req, res) => {
   if (!name || name.length > 100) {
     return res.status(400).json({ error: "Please enter your name (up to 100 characters)." });
   }
-  if (!EMAIL_PATTERN.test(email) || email.length > 254) {
+  if (!EMAIL_PATTERN.test(email) || email.length > MAX_EMAIL_LENGTH) {
     return res.status(400).json({ error: "Please enter a valid email address." });
   }
   if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
@@ -55,8 +87,15 @@ authRouter.post("/register", async (req, res) => {
 // --- Log in -----------------------------------------------------------------
 
 authRouter.post("/login", async (req, res) => {
-  const email = cleanText(req.body?.email).toLowerCase();
-  const password = typeof req.body?.password === "string" ? req.body.password : "";
+  const email = cleanText(req.body?.email).toLowerCase().slice(0, MAX_EMAIL_LENGTH);
+  const password = typeof req.body?.password === "string" ? req.body.password.slice(0, MAX_PASSWORD_LENGTH + 1) : "";
+
+  // Count the attempt BEFORE checking the password, because that check is slow
+  // and other requests can arrive while it runs. Every email is counted the
+  // same way, so being blocked reveals nothing about which emails have accounts.
+  const limits = loginLimits(req.ip, email);
+  const attempt = consumeAttempt([limits.account, limits.ip]);
+  if (!attempt.allowed) return sendTooManyAttempts(res, attempt.retryAfterSeconds);
 
   const user = findUserByEmailWithPassword(email);
 
@@ -69,6 +108,10 @@ authRouter.post("/login", async (req, res) => {
     // Same message for both cases, for the same reason.
     return res.status(401).json({ error: "Invalid email or password." });
   }
+
+  // Only failures should count, so a successful log-in takes its attempt back.
+  resetAttempts(limits.account.key);
+  refundAttempt(limits.ip.key);
 
   startSession(res, user.id);
   res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
