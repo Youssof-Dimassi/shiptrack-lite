@@ -63,6 +63,14 @@ db.exec(`
     created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
   );
 
+  -- Counters that stop people from trying things endlessly (see models/rateLimits.js).
+  -- reset_at is a time in milliseconds.
+  CREATE TABLE IF NOT EXISTS rate_limits (
+    bucket   TEXT    PRIMARY KEY,
+    hits     INTEGER NOT NULL,
+    reset_at INTEGER NOT NULL
+  );
+
   -- One row per logged-in browser.
   -- token_hash is a hash of the secret stored in the user's cookie, so a
   -- stolen copy of the database can't be used to log in as anyone.

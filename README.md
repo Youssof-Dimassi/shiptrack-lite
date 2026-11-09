@@ -24,7 +24,8 @@ shiptrack-lite/
 │   ├── theme.js           Light and dark mode
 │   └── nav.js             Shows "Log in" or "Hi, <name> · Log out"
 ├── src/             Server code (runs on the server, never sent to the browser)
-│   ├── server.js          Creates the app and connects all the pieces
+│   ├── app.js             Builds the app and connects all the pieces
+│   ├── server.js          Starts the app
 │   ├── routes/            Which URL does what
 │   │   ├── auth.js        Register, log in, log out, "who am I?"
 │   │   ├── admin.js       Staff-only shipment management
@@ -40,7 +41,9 @@ shiptrack-lite/
 │   └── models/            SQL queries
 │       ├── shipments.js
 │       ├── users.js
-│       └── sessions.js
+│       ├── sessions.js
+│       └── rateLimits.js
+├── test/            Automated tests (run with npm test)
 ├── package.json     Project info, scripts, and dependencies
 └── README.md
 ```
@@ -87,7 +90,6 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/auth/login` | Log in `{ email, password }` |
 | `POST /api/auth/logout` | Log out |
 | `GET /api/auth/me` | The logged-in user, or `401` |
-
 | `GET /admin` | Staff dashboard |
 | `GET /api/admin/shipments` | All shipments (admin only) |
 | `POST /api/admin/shipments` | Create a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
@@ -109,6 +111,28 @@ Admin rights can only be granted from the terminal, never from the website.
 - On log-in, the server creates a random session token and sends it in an `HttpOnly` cookie.
   Only a hash of the token is stored in the database.
 - Sessions last 7 days. Logging out deletes the session.
+
+### Rate limits
+
+| What's limited | Limit |
+| --- | --- |
+| Failed log-ins for one account from one address | 5 per 15 minutes |
+| Failed log-ins from one address, across all accounts | 30 per 15 minutes |
+| Sign-up attempts from one address | 20 per hour |
+
+Blocked requests get a `429` response with a `Retry-After` header.
+
+When the app runs behind a proxy, set the `TRUST_PROXY` environment variable to the
+number of proxies so the limits use each visitor's real address. Leave it unset otherwise.
+
+### Testing
+
+```powershell
+npm test
+```
+
+The tests use a temporary database in memory, so they never touch `shiptrack.db`.
+They also run on GitHub for every Pull Request.
 
 ### Sample tracking numbers
 
