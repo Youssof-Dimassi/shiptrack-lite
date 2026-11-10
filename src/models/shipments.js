@@ -25,7 +25,7 @@ const findShipment = db.prepare(`
 `);
 
 const findEvents = db.prepare(`
-  SELECT occurred_at, location, description
+  SELECT id, occurred_at, location, description
   FROM shipment_events
   WHERE shipment_id = ?
   ORDER BY occurred_at, id
@@ -96,6 +96,7 @@ export function findShipmentByTrackingNumber(trackingNumber) {
   return {
     ...toShipment(row),
     events: findEvents.all(row.id).map((e) => ({
+      id: e.id,
       date: e.occurred_at,
       location: e.location,
       description: e.description,
@@ -151,17 +152,17 @@ export function createShipment({ origin, destination, estimatedDelivery }) {
 }
 
 // Sets a new status and records it in the history, as one all-or-nothing step.
-// Returns the updated shipment, or null if the tracking number doesn't exist.
+// Returns { shipment, shipmentId, eventId }, or null if the tracking number doesn't exist.
 export function addShipmentUpdate(trackingNumber, { status, location, description }) {
   const row = findShipment.get(trackingNumber);
   if (!row) return null;
 
-  runInTransaction(() => {
+  const eventId = runInTransaction(() => {
     updateStatus.run(status, row.id);
-    insertEvent.run(row.id, new Date().toISOString(), location, description);
+    return Number(insertEvent.run(row.id, new Date().toISOString(), location, description).lastInsertRowid);
   });
 
-  return findShipmentByTrackingNumber(trackingNumber);
+  return { shipment: findShipmentByTrackingNumber(trackingNumber), shipmentId: row.id, eventId };
 }
 
 // randomInt is cryptographically random, so numbers can't be predicted from
@@ -171,4 +172,52 @@ function generateTrackingNumber() {
     const candidate = `ST${randomInt(10_000_000, 100_000_000)}`;
     if (!findShipment.get(candidate)) return candidate;
   }
+}
+
+// --- History entries -------------------------------------------------------
+//
+// Every statement below also checks the tracking number, so an entry can only
+// be changed through the shipment it belongs to.
+
+const SHIPMENT_ID_FOR = "(SELECT id FROM shipments WHERE tracking_number = ?)";
+
+const selectEventOfShipment = db.prepare(`SELECT id FROM shipment_events WHERE id = ? AND shipment_id = ${SHIPMENT_ID_FOR}`);
+const countEventsOfShipment = db.prepare(`SELECT COUNT(*) AS count FROM shipment_events WHERE shipment_id = ${SHIPMENT_ID_FOR}`);
+const updateEventText = db.prepare(`UPDATE shipment_events SET location = ?, description = ? WHERE id = ? AND shipment_id = ${SHIPMENT_ID_FOR}`);
+const removeEvent = db.prepare(`DELETE FROM shipment_events WHERE id = ? AND shipment_id = ${SHIPMENT_ID_FOR}`);
+
+const selectEventForEmail = db.prepare(`
+  SELECT s.tracking_number, s.origin, s.destination, e.location, e.description
+  FROM shipment_events e
+  JOIN shipments s ON s.id = e.shipment_id
+  WHERE e.id = ? AND s.id = ?
+`);
+
+// Fixes the text of an entry. Its date and the shipment's status don't change.
+// Returns false if the entry doesn't exist on this shipment.
+export function updateShipmentEvent(trackingNumber, eventId, { location, description }) {
+  return updateEventText.run(location, description, eventId, trackingNumber).changes > 0;
+}
+
+// Returns "deleted", "not_found", or "last_entry" (a shipment always keeps one).
+export function deleteShipmentEvent(trackingNumber, eventId) {
+  return runInTransaction(() => {
+    if (!selectEventOfShipment.get(eventId, trackingNumber)) return "not_found";
+    if (countEventsOfShipment.get(trackingNumber).count <= 1) return "last_entry";
+    removeEvent.run(eventId, trackingNumber);
+    return "deleted";
+  });
+}
+
+// What a notification email needs to say about one update, or null if gone.
+export function findEventForEmail(shipmentId, eventId) {
+  const row = selectEventForEmail.get(eventId, shipmentId);
+  if (!row) return null;
+  return {
+    trackingNumber: row.tracking_number,
+    origin: row.origin,
+    destination: row.destination,
+    location: row.location,
+    description: row.description,
+  };
 }

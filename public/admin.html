@@ -137,6 +137,18 @@
         </form>
     </dialog>
 
+    <dialog id="history-dialog" class="admin-dialog admin-dialog-wide" aria-labelledby="history-title">
+        <div class="dialog-body">
+            <h2 id="history-title">History</h2>
+            <p class="dialog-text">Fix a typo or remove a mistaken entry. To change the status, post an update instead.</p>
+            <ol id="history-list" class="history-list"></ol>
+            <p id="history-error" class="form-error" role="alert" hidden></p>
+            <div class="dialog-actions">
+                <button type="button" class="button-secondary" data-close-dialog>Close</button>
+            </div>
+        </div>
+    </dialog>
+
     <dialog id="update-dialog" class="admin-dialog" aria-labelledby="update-title">
         <form id="update-form">
             <h2 id="update-title">Update shipment</h2>

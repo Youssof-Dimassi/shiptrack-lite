@@ -2,15 +2,13 @@
 
 import { appUrl } from "../config.js";
 import { EMAIL_CONFIRMATION, PASSWORD_RESET, createAccountToken } from "../models/accountTokens.js";
-import { sendEmail } from "./mailer.js";
+import { enqueueJob } from "../jobs/queue.js";
 
-// Doesn't wait for delivery, for two reasons: a slow mail server shouldn't slow
-// the website down, and a reply that takes longer when the account exists
-// would reveal who has an account. A failure is logged, without the contents.
+// Emails go through the job queue: the website doesn't wait for the mail
+// server, a failed delivery is tried again later, and a reply can't take
+// longer when an account exists (which would reveal who has an account).
 function deliverInBackground(message) {
-  sendEmail(message).catch((error) => {
-    console.error(`Could not send an email: ${error.message}`);
-  });
+  enqueueJob("send-email", message);
 }
 
 export function sendConfirmationEmail(user) {

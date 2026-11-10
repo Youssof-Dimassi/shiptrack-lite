@@ -89,6 +89,22 @@ db.exec(`
     expires_at TEXT    NOT NULL
   );
 
+  -- Background jobs (see src/jobs/queue.js). Times are in milliseconds.
+  CREATE TABLE IF NOT EXISTS jobs (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    type         TEXT    NOT NULL,
+    payload      TEXT    NOT NULL,
+    status       TEXT    NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'running', 'done', 'failed')),
+    attempts     INTEGER NOT NULL DEFAULT 0,
+    max_attempts INTEGER NOT NULL,
+    run_at       INTEGER NOT NULL,
+    locked_at    INTEGER,
+    last_error   TEXT,
+    created_at   INTEGER NOT NULL,
+    finished_at  INTEGER
+  );
+  CREATE INDEX IF NOT EXISTS jobs_due ON jobs (status, run_at);
+
   -- One row per logged-in browser.
   -- token_hash is a hash of the secret stored in the user's cookie, so a
   -- stolen copy of the database can't be used to log in as anyone.
@@ -101,8 +117,15 @@ db.exec(`
 `);
 
 // Runs several database changes as one: if any of them fails, none are saved.
+// A transaction started inside another one simply joins it, so functions that
+// use transactions can be combined into one bigger all-or-nothing change.
+let transactionDepth = 0;
+
 export function runInTransaction(work) {
+  if (transactionDepth > 0) return work();
+
   db.exec("BEGIN");
+  transactionDepth += 1;
   try {
     const result = work();
     db.exec("COMMIT");
@@ -110,6 +133,8 @@ export function runInTransaction(work) {
   } catch (error) {
     db.exec("ROLLBACK");
     throw error;
+  } finally {
+    transactionDepth -= 1;
   }
 }
 
@@ -121,6 +146,9 @@ export function runInTransaction(work) {
 // Never edit or remove an entry: add a new one at the end.
 const MIGRATIONS = [
   "ALTER TABLE users ADD COLUMN email_confirmed_at TEXT",
+  "ALTER TABLE users ADD COLUMN notify_shipment_updates INTEGER NOT NULL DEFAULT 1",
+  "ALTER TABLE users ADD COLUMN unsubscribe_token TEXT",
+  "CREATE UNIQUE INDEX IF NOT EXISTS users_unsubscribe_token ON users (unsubscribe_token)",
 ];
 
 const { user_version: appliedMigrations } = db.prepare("PRAGMA user_version").get();

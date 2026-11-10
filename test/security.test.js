@@ -42,7 +42,7 @@ describe("security headers", () => {
   });
 
   it("every page loads only scripts from this site", async () => {
-    for (const path of ["/", "/login", "/register", "/admin", "/my-shipments", "/forgot-password", "/reset-password", "/confirm-email"]) {
+    for (const path of ["/", "/login", "/register", "/admin", "/my-shipments", "/forgot-password", "/reset-password", "/confirm-email", "/unsubscribe"]) {
       const { text, status } = await visitor("GET", path);
       assert.equal(status, 200, path);
       for (const [, source] of text.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)) {

@@ -57,7 +57,8 @@ process.env.SMTP_URL = `smtp://127.0.0.1:${mailServer.address().port}`;
 process.env.EMAIL_FROM = "ShipTrack Test <test@example.com>";
 process.env.APP_URL = "https://shiptrack.example/";
 
-const { PASSWORD, createClient, uniqueEmail } = await import("./helpers.js");
+const { PASSWORD, createAdmin, createClient, createLoggedInUser, drainJobs, uniqueEmail } = await import("./helpers.js");
+const { db } = await import("../src/db/database.js");
 
 after(() => mailServer.close());
 
@@ -66,6 +67,7 @@ describe("sending email over SMTP", () => {
     const email = uniqueEmail();
     const response = await createClient()("POST", "/api/auth/register", { name: "Sam", email, password: PASSWORD });
     assert.equal(response.status, 201);
+    await drainJobs();
 
     for (let i = 0; i < 100 && received.length === 0; i += 1) await wait(50);
 
@@ -75,5 +77,22 @@ describe("sending email over SMTP", () => {
     assert.match(message, /From: ShipTrack Test <test@example\.com>/);
     assert.match(message, /Subject: Confirm your ShipTrack Lite email/);
     assert.match(message, /https:\/\/shiptrack\.example\/confirm-email\?token=/);
+  });
+
+  it("delivers update emails with the one-click unsubscribe headers", async () => {
+    const { client: admin } = await createAdmin();
+    const { client, email } = await createLoggedInUser();
+    db.prepare("UPDATE users SET email_confirmed_at = ? WHERE email = ?").run(new Date().toISOString(), email);
+    await client("POST", "/api/my-shipments", { trackingNumber: "ST10000001" });
+
+    await admin("POST", "/api/admin/shipments/ST10000001/events", { status: "Delivered", location: "Paris", description: "Delivered" });
+    await drainJobs();
+
+    // Long header lines are folded onto the next line in real email, so join them back up.
+    const message = received.find((raw) => raw.includes("ST10000001: Delivered"));
+    assert.ok(message, "the update email was not delivered");
+    const headers = message.replace(/\r?\n[ \t]+/g, " ");
+    assert.match(headers, /List-Unsubscribe: <https:\/\/shiptrack\.example\/api\/notifications\/unsubscribe\?token=[\w-]+>/);
+    assert.match(headers, /List-Unsubscribe-Post: List-Unsubscribe=One-Click/);
   });
 });

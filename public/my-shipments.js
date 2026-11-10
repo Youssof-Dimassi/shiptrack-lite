@@ -140,7 +140,9 @@ async function showConfirmReminder() {
   try {
     const response = await fetch("/api/auth/me");
     if (!response.ok) return;
-    confirmBanner.hidden = (await response.json()).user.emailConfirmed;
+    const { user } = await response.json();
+    confirmBanner.hidden = user.emailConfirmed;
+    showNotificationSetting(user);
   } catch {
     // It's only a reminder, so it's fine to skip it.
   }
@@ -156,6 +158,38 @@ resendButton.addEventListener("click", async () => {
     confirmBannerText.textContent = "Could not reach the server. Please try again.";
   } finally {
     resendButton.disabled = false;
+  }
+});
+
+// --- Update emails setting ------------------------------------------------
+
+const notifyPanel = document.querySelector("#notify-panel");
+const notifyToggle = document.querySelector("#notify-toggle");
+const notifyNote = document.querySelector("#notify-note");
+
+function showNotificationSetting(user) {
+  notifyToggle.checked = user.notifyShipmentUpdates;
+  notifyNote.textContent = "Confirm your email address to start getting these emails.";
+  notifyNote.hidden = user.emailConfirmed;
+  notifyPanel.hidden = false;
+}
+
+notifyToggle.addEventListener("change", async () => {
+  const wanted = notifyToggle.checked;
+  notifyToggle.disabled = true;
+  try {
+    const response = await fetch("/api/notifications/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shipmentUpdates: wanted }),
+    });
+    if (!response.ok) throw new Error("not saved");
+  } catch {
+    notifyToggle.checked = !wanted;
+    notifyNote.textContent = "Could not save that setting. Please try again.";
+    notifyNote.hidden = false;
+  } finally {
+    notifyToggle.disabled = false;
   }
 });
 
