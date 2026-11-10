@@ -18,10 +18,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadUser } from "./auth/middleware.js";
 import { demoMode, isProduction } from "./config.js";
+import "./jobs/definitions.js";
 import { accountRouter } from "./routes/account.js";
 import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { myShipmentsRouter } from "./routes/myShipments.js";
+import { notificationsRouter } from "./routes/notifications.js";
 import { shipmentsRouter } from "./routes/shipments.js";
 
 // Find the absolute path of the /public folder, no matter where the
@@ -87,6 +89,7 @@ app.get("/api/config", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/auth", accountRouter);
 app.use("/api/my-shipments", myShipmentsRouter);
+app.use("/api/notifications", notificationsRouter);
 app.use("/api/shipments", shipmentsRouter);
 app.use("/api/admin", adminRouter);
 

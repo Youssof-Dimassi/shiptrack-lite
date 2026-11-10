@@ -46,7 +46,7 @@ describe("upgrading an older database", () => {
 
       assert.equal(user.role, "admin");
       assert.equal(user.email_confirmed_at, null);
-      assert.equal(version, 1);
+      assert.equal(version, 4);
     } finally {
       rmSync(folder, { recursive: true, force: true });
     }

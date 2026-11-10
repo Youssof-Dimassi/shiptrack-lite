@@ -58,6 +58,7 @@ describe("the rest of the site", () => {
     ["/forgot-password", "text/html"],
     ["/reset-password", "text/html"],
     ["/confirm-email", "text/html"],
+    ["/unsubscribe", "text/html"],
   ]) {
     it(`serves ${path}`, async () => {
       const response = await visitor("GET", path);

@@ -14,6 +14,7 @@ process.env.EMAIL_TRANSPORT ??= "memory"; // keeps test emails from being sent o
 const { app } = await import("../src/app.js");
 const { clearAllRateLimits } = await import("../src/models/rateLimits.js");
 const { setUserRole } = await import("../src/models/users.js");
+const { processDueJobs } = await import("../src/jobs/queue.js");
 
 // Port 0 asks the computer for any free port.
 const server = app.listen(0);
@@ -43,7 +44,7 @@ export function createClient() {
 
   return async function request(method, path, body, options = {}) {
     const headers = { ...options.headers };
-    if (body !== undefined || options.rawBody !== undefined) headers["Content-Type"] = "application/json";
+    if (body !== undefined || options.rawBody !== undefined) headers["Content-Type"] ??= "application/json";
     if (cookie) headers.Cookie = cookie;
 
     const response = await fetch(baseUrl + path, {
@@ -73,6 +74,7 @@ export async function createLoggedInUser() {
   const email = uniqueEmail();
   const response = await client("POST", "/api/auth/register", { name: "Test User", email, password: PASSWORD });
   if (response.status !== 201) throw new Error(`Could not create test user: ${response.text}`);
+  await drainJobs(); // sends the confirmation email now, so tests start with an empty outbox
   return { client, email };
 }
 
@@ -80,4 +82,10 @@ export async function createAdmin() {
   const user = await createLoggedInUser();
   setUserRole(user.email, "admin");
   return user;
+}
+
+// Runs every background job that's waiting. The tests don't start the worker,
+// so they decide exactly when jobs run.
+export function drainJobs() {
+  return processDueJobs();
 }

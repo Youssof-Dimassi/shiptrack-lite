@@ -62,3 +62,19 @@ export function removeSavedShipment(userId, trackingNumber) {
   if (!shipment) return false;
   return deleteLink.run(userId, shipment.id).changes > 0;
 }
+
+// Who should be emailed about an update: customers who saved the shipment,
+// confirmed their email address, and haven't turned update emails off.
+const selectRecipients = db.prepare(`
+  SELECT u.id, u.name, u.email
+  FROM saved_shipments saved
+  JOIN users u ON u.id = saved.user_id
+  WHERE saved.shipment_id = ?
+    AND u.email_confirmed_at IS NOT NULL
+    AND u.notify_shipment_updates = 1
+  ORDER BY u.id
+`);
+
+export function listUpdateRecipients(shipmentId) {
+  return selectRecipients.all(shipmentId).map((row) => ({ id: row.id, name: row.name, email: row.email }));
+}

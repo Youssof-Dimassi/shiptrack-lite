@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
-import { PASSWORD, createClient, createLoggedInUser, uniqueEmail } from "./helpers.js";
+import { PASSWORD, createClient, createLoggedInUser, drainJobs, uniqueEmail } from "./helpers.js";
 
 const { db } = await import("../src/db/database.js");
 const { sentEmails } = await import("../src/email/mailer.js");
@@ -15,11 +15,16 @@ const CONFIRM = `${AUTH}/confirm-email`;
 const RESEND = `${AUTH}/resend-confirmation`;
 const NEW_PASSWORD = "a-brand-new-password";
 
-beforeEach(() => {
+// Start each test with an empty queue and outbox, so emails from one test
+// can never be counted in the next.
+beforeEach(async () => {
+  await drainJobs();
   sentEmails.length = 0;
 });
 
-function emailsTo(address) {
+// Emails are sent by background jobs, so run those first.
+async function emailsTo(address) {
+  await drainJobs();
   return sentEmails.filter((email) => email.to === address);
 }
 
@@ -27,8 +32,8 @@ function tokenIn(email) {
   return email.text.match(/token=([\w-]+)/)[1];
 }
 
-function lastToken(address) {
-  const emails = emailsTo(address);
+async function lastToken(address) {
+  const emails = await emailsTo(address);
   return tokenIn(emails[emails.length - 1]);
 }
 
@@ -42,7 +47,7 @@ function post(path, body, options) {
 
 async function requestResetToken(email) {
   await post(FORGOT, { email });
-  return lastToken(email);
+  return (await lastToken(email));
 }
 
 function login(email, password) {
@@ -52,14 +57,14 @@ function login(email, password) {
 describe("confirming an email address", () => {
   it("sends a confirmation link when signing up", async () => {
     const { email } = await createLoggedInUser();
-    const [message] = emailsTo(email);
+    const [message] = (await emailsTo(email));
     assert.match(message.subject, /Confirm/);
     assert.match(message.text, /^[\s\S]*http:\/\/localhost:\d+\/confirm-email\?token=[\w-]{43}/);
   });
 
   it("never puts the password in an email", async () => {
     const { email } = await createLoggedInUser();
-    assert.doesNotMatch(emailsTo(email)[0].text, new RegExp(PASSWORD));
+    assert.doesNotMatch((await emailsTo(email))[0].text, new RegExp(PASSWORD));
   });
 
   it("starts unconfirmed but lets the customer log in", async () => {
@@ -72,7 +77,7 @@ describe("confirming an email address", () => {
 
   it("confirms with the link's token", async () => {
     const { client, email } = await createLoggedInUser();
-    assert.equal((await post(CONFIRM, { token: lastToken(email) })).status, 200);
+    assert.equal((await post(CONFIRM, { token: (await lastToken(email)) })).status, 200);
     assert.equal((await client("GET", ME)).json.user.emailConfirmed, true);
     assert.equal((await login(email, PASSWORD)).json.user.emailConfirmed, true);
   });
@@ -80,20 +85,20 @@ describe("confirming an email address", () => {
   it("only confirms the account the link was sent to", async () => {
     const { email } = await createLoggedInUser();
     const { client: other } = await createLoggedInUser();
-    await post(CONFIRM, { token: lastToken(email) });
+    await post(CONFIRM, { token: (await lastToken(email)) });
     assert.equal((await other("GET", ME)).json.user.emailConfirmed, false);
   });
 
   it("works only once", async () => {
     const { email } = await createLoggedInUser();
-    const token = lastToken(email);
+    const token = (await lastToken(email));
     assert.equal((await post(CONFIRM, { token })).status, 200);
     assert.equal((await post(CONFIRM, { token })).status, 400);
   });
 
   it("rejects an expired link", async () => {
     const { client, email } = await createLoggedInUser();
-    const token = lastToken(email);
+    const token = (await lastToken(email));
     expireAllTokens();
     assert.equal((await post(CONFIRM, { token })).status, 400);
     assert.equal((await client("GET", ME)).json.user.emailConfirmed, false);
@@ -118,7 +123,7 @@ describe("confirming an email address", () => {
 
   it("keeps the original confirmation time", async () => {
     const { email } = await createLoggedInUser();
-    await post(CONFIRM, { token: lastToken(email) });
+    await post(CONFIRM, { token: (await lastToken(email)) });
     const confirmedAt = () => db.prepare("SELECT email_confirmed_at FROM users WHERE email = ?").get(email).email_confirmed_at;
     const first = confirmedAt();
     assert.ok(first);
@@ -131,7 +136,7 @@ describe("confirming an email address", () => {
 
   it("stores only a hash of the token", async () => {
     const { email } = await createLoggedInUser();
-    const token = lastToken(email);
+    const token = (await lastToken(email));
     const match = db.prepare("SELECT COUNT(*) AS count FROM account_tokens WHERE token_hash = ?").get(token);
     assert.equal(match.count, 0);
   });
@@ -144,9 +149,9 @@ describe("resending the confirmation", () => {
 
   it("sends a new link and cancels the old one", async () => {
     const { client, email } = await createLoggedInUser();
-    const oldToken = lastToken(email);
+    const oldToken = (await lastToken(email));
     assert.equal((await client("POST", RESEND)).status, 200);
-    const newToken = lastToken(email);
+    const newToken = (await lastToken(email));
 
     assert.notEqual(newToken, oldToken);
     assert.equal((await post(CONFIRM, { token: oldToken })).status, 400);
@@ -155,10 +160,10 @@ describe("resending the confirmation", () => {
 
   it("sends nothing if already confirmed", async () => {
     const { client, email } = await createLoggedInUser();
-    await post(CONFIRM, { token: lastToken(email) });
-    const before = emailsTo(email).length;
+    await post(CONFIRM, { token: (await lastToken(email)) });
+    const before = (await emailsTo(email)).length;
     assert.equal((await client("POST", RESEND)).status, 200);
-    assert.equal(emailsTo(email).length, before);
+    assert.equal((await emailsTo(email)).length, before);
   });
 
   it("is limited per account", async () => {
@@ -174,7 +179,7 @@ describe("asking to reset a password", () => {
     const { email } = await createLoggedInUser();
     sentEmails.length = 0;
     assert.equal((await post(FORGOT, { email })).status, 200);
-    const [message] = emailsTo(email);
+    const [message] = (await emailsTo(email));
     assert.match(message.subject, /Reset/);
     assert.match(message.text, /\/reset-password\?token=[\w-]{43}/);
   });
@@ -183,7 +188,7 @@ describe("asking to reset a password", () => {
     const { email } = await createLoggedInUser();
     sentEmails.length = 0;
     await post(FORGOT, { email: `  ${email.toUpperCase()} ` });
-    assert.equal(emailsTo(email).length, 1);
+    assert.equal((await emailsTo(email)).length, 1);
   });
 
   it("gives the same answer whether or not the account exists", async () => {
@@ -196,12 +201,14 @@ describe("asking to reset a password", () => {
 
   it("sends nothing for an unknown email", async () => {
     await post(FORGOT, { email: uniqueEmail() });
-    assert.equal(sentEmails.length, 0);
+    await drainJobs();
+      assert.equal(sentEmails.length, 0);
   });
 
   for (const [problem, email] of [["a missing email", undefined], ["the wrong type", ["a@b.co"]]]) {
     it(`handles ${problem}`, async () => {
       assert.equal((await post(FORGOT, { email })).status, 200);
+      await drainJobs();
       assert.equal(sentEmails.length, 0);
     });
   }
@@ -210,8 +217,8 @@ describe("asking to reset a password", () => {
     const { email } = await createLoggedInUser();
     sentEmails.length = 0;
     await post(FORGOT, { email }, { headers: { Host: "evil.example", "X-Forwarded-Host": "evil.example" } });
-    assert.doesNotMatch(emailsTo(email)[0].text, /evil\.example/);
-    assert.match(emailsTo(email)[0].text, /http:\/\/localhost/);
+    assert.doesNotMatch((await emailsTo(email))[0].text, /evil\.example/);
+    assert.match((await emailsTo(email))[0].text, /http:\/\/localhost/);
   });
 
   it("can't be used to flood someone's inbox, and stays silent about it", async () => {
@@ -219,7 +226,7 @@ describe("asking to reset a password", () => {
     sentEmails.length = 0;
     const responses = [];
     for (let i = 0; i < 5; i += 1) responses.push(await post(FORGOT, { email }));
-    assert.equal(emailsTo(email).length, 3);
+    assert.equal((await emailsTo(email)).length, 3);
     assert.ok(responses.every((response) => response.status === 200));
     assert.equal(responses[4].text, responses[0].text);
   });
@@ -345,7 +352,7 @@ describe("choosing a new password", () => {
 
   it("doesn't accept a confirmation token", async () => {
     const { email } = await createLoggedInUser();
-    assert.equal((await post(RESET, { token: lastToken(email), password: NEW_PASSWORD })).status, 400);
+    assert.equal((await post(RESET, { token: (await lastToken(email)), password: NEW_PASSWORD })).status, 400);
     assert.equal((await login(email, PASSWORD)).status, 200);
   });
 

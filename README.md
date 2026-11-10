@@ -46,6 +46,7 @@ shiptrack-lite/
 │   │   ├── database.js    Opens the SQLite database and creates the tables
 │   │   └── seed.js        Sample shipments, inserted on first run
 │   ├── email/             Sending email and what the emails say
+│   ├── jobs/              Background job queue, worker, and job types
 │   ├── scripts/
 │   │   └── make-admin.js  Grants admin rights from the terminal
 │   └── models/            SQL queries
@@ -106,6 +107,8 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/auth/reset-password` | Set a new password `{ token, password }` |
 | `POST /api/auth/confirm-email` | Confirm an email address `{ token }` |
 | `POST /api/auth/resend-confirmation` | Email a new confirmation link |
+| `PUT /api/notifications/preferences` | Turn update emails on or off `{ shipmentUpdates }` |
+| `POST /api/notifications/unsubscribe` | Turn update emails off with the link from an email |
 | `GET /my-shipments` | A customer's saved shipments |
 | `GET /api/my-shipments` | The logged-in customer's saved shipments |
 | `POST /api/my-shipments` | Save a shipment `{ trackingNumber }` |
@@ -115,6 +118,9 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `GET /api/admin/shipments` | One page of shipments, with optional `page`, `search`, and `status` (admin only) |
 | `POST /api/admin/shipments` | Create a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
 | `PUT /api/admin/shipments/:trackingNumber` | Edit a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
+| `GET /api/admin/shipments/:trackingNumber` | One shipment with its history (admin only) |
+| `PUT /api/admin/shipments/:trackingNumber/events/:eventId` | Fix a history entry `{ location, description }` (admin only) |
+| `DELETE /api/admin/shipments/:trackingNumber/events/:eventId` | Remove a history entry (admin only) |
 | `DELETE /api/admin/shipments/:trackingNumber` | Delete a shipment and its history (admin only) |
 | `POST /api/admin/shipments/:trackingNumber/events` | Post an update `{ status, location, description }` (admin only) |
 
@@ -151,6 +157,16 @@ Blocked requests get a `429` response with a `Retry-After` header.
 When the app runs behind a proxy, set the `TRUST_PROXY` environment variable to the
 number of proxies so the limits use each visitor's real address. Leave it unset otherwise.
 
+### Background jobs
+
+Slow or unreliable work, like sending email, runs in the background through a job queue
+stored in the database (`src/jobs/`). The server checks it every 2 seconds. Failed jobs are
+tried again after 1, 2, 4, 8... minutes, up to 5 attempts. Finished jobs keep no payload,
+because email jobs can contain private links.
+
+When staff post a shipment update, customers who saved that shipment, confirmed their email,
+and kept update emails on get an email. Each email has a one-click unsubscribe link.
+
 ### Email while developing
 
 Without `SMTP_URL`, emails are printed in the terminal, so you can copy links from there.
@@ -167,6 +183,7 @@ In production without `SMTP_URL`, emails are not sent or printed, because they c
 | `APP_URL` | The site's public address, used for links in emails | `http://localhost:3000` |
 | `SMTP_URL` | The mail server, e.g. `smtp://user:password@host:587` | not set |
 | `EMAIL_FROM` | The sender shown on emails | `ShipTrack Lite <no-reply@shiptrack.example>` |
+| `RUN_JOBS` | Set to `false` to stop the server running background jobs | runs them |
 | `SEED_DEMO_DATA` | `true` or `false` to override demo mode | on, except in production |
 
 ### Testing

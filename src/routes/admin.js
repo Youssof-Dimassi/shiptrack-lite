@@ -4,18 +4,26 @@
 //   POST   /api/admin/shipments                       → create a shipment
 //   PUT    /api/admin/shipments/:trackingNumber       → edit its details
 //   DELETE /api/admin/shipments/:trackingNumber       → delete it
-//   POST   /api/admin/shipments/:trackingNumber/events → post a status update
+//   GET    /api/admin/shipments/:trackingNumber       → one shipment with its history
+//   POST   /api/admin/shipments/:trackingNumber/events → post a status update (and notify customers)
+//   PUT    /api/admin/shipments/:trackingNumber/events/:eventId → fix a history entry
+//   DELETE /api/admin/shipments/:trackingNumber/events/:eventId → remove a history entry
 
 import { Router } from "express";
 import { requireAdmin, requireAuth } from "../auth/middleware.js";
+import { runInTransaction } from "../db/database.js";
+import { enqueueJob } from "../jobs/queue.js";
 import {
   SHIPMENT_STATUSES,
   TRACKING_NUMBER_PATTERN,
   addShipmentUpdate,
   createShipment,
   deleteShipment,
+  deleteShipmentEvent,
+  findShipmentByTrackingNumber,
   searchShipments,
   updateShipmentDetails,
+  updateShipmentEvent,
 } from "../models/shipments.js";
 
 export const adminRouter = Router();
@@ -96,13 +104,65 @@ adminRouter.post("/shipments/:trackingNumber/events", (req, res) => {
     return badRequest(res, `Please enter a description (up to ${MAX_DESCRIPTION_LENGTH} characters).`);
   }
 
-  const shipment = addShipmentUpdate(trackingNumber, { status, location, description });
+  // The update and its notification job are saved together: there can never be
+  // an update without its emails, or emails about an update that wasn't saved.
+  const result = runInTransaction(() => {
+    const update = addShipmentUpdate(trackingNumber, { status, location, description });
+    if (update) enqueueJob("notify-shipment-update", { shipmentId: update.shipmentId, eventId: update.eventId, status });
+    return update;
+  });
+  if (!result) return notFound(res, trackingNumber);
+
+  res.status(201).json({ shipment: result.shipment });
+});
+
+adminRouter.get("/shipments/:trackingNumber", (req, res) => {
+  const trackingNumber = readTrackingNumber(req);
+  if (!trackingNumber) return badRequest(res, "Invalid tracking number.");
+
+  const shipment = findShipmentByTrackingNumber(trackingNumber);
   if (!shipment) return notFound(res, trackingNumber);
 
-  res.status(201).json({ shipment });
+  res.json({ shipment });
+});
+
+adminRouter.put("/shipments/:trackingNumber/events/:eventId", (req, res) => {
+  const trackingNumber = readTrackingNumber(req);
+  const eventId = readEventId(req);
+  if (!trackingNumber || !eventId) return badRequest(res, "Invalid tracking number or history entry.");
+
+  const location = cleanText(req.body?.location);
+  const description = cleanText(req.body?.description);
+  if (!isValidPlace(location)) return badRequest(res, placeError("location"));
+  if (!description || description.length > MAX_DESCRIPTION_LENGTH) {
+    return badRequest(res, `Please enter a description (up to ${MAX_DESCRIPTION_LENGTH} characters).`);
+  }
+
+  if (!updateShipmentEvent(trackingNumber, eventId, { location, description })) {
+    return res.status(404).json({ error: "That history entry doesn't exist." });
+  }
+
+  res.json({ shipment: findShipmentByTrackingNumber(trackingNumber) });
+});
+
+adminRouter.delete("/shipments/:trackingNumber/events/:eventId", (req, res) => {
+  const trackingNumber = readTrackingNumber(req);
+  const eventId = readEventId(req);
+  if (!trackingNumber || !eventId) return badRequest(res, "Invalid tracking number or history entry.");
+
+  const outcome = deleteShipmentEvent(trackingNumber, eventId);
+  if (outcome === "not_found") return res.status(404).json({ error: "That history entry doesn't exist." });
+  if (outcome === "last_entry") return res.status(409).json({ error: "A shipment needs at least one history entry." });
+
+  res.json({ shipment: findShipmentByTrackingNumber(trackingNumber) });
 });
 
 // --- Helpers ----------------------------------------------------------------
+
+// History entry ids are positive whole numbers.
+function readEventId(req) {
+  return /^[1-9]\d{0,11}$/.test(req.params.eventId) ? Number(req.params.eventId) : null;
+}
 
 function badRequest(res, error) {
   return res.status(400).json({ error });

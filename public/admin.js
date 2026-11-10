@@ -34,6 +34,10 @@ const statusSelect = document.querySelector("#status");
 const deleteDialog = document.querySelector("#delete-dialog");
 const deleteForm = document.querySelector("#delete-form");
 const deleteTitle = document.querySelector("#delete-title");
+const historyDialog = document.querySelector("#history-dialog");
+const historyTitle = document.querySelector("#history-title");
+const historyList = document.querySelector("#history-list");
+const historyError = document.querySelector("#history-error");
 
 const filters = []; // one entry per sidebar button
 let currentPage = 1;
@@ -173,6 +177,7 @@ function createRow(shipment) {
   actions.className = "row-actions";
   actions.append(
     createRowButton("Update", shipment, openUpdateDialog),
+    createRowButton("History", shipment, openHistoryDialog),
     createRowButton("Edit", shipment, openEditDialog),
     createRowButton("Delete", shipment, openDeleteDialog, "button-danger-outline"),
   );
@@ -342,6 +347,144 @@ function showMessage(text, type) {
   message.className = `message message-${type}`;
   message.textContent = text;
   messageBox.replaceChildren(message);
+}
+
+// --- History entries ------------------------------------------------------
+
+async function openHistoryDialog(shipment) {
+  selectedTrackingNumber = shipment.trackingNumber;
+  historyTitle.textContent = `History of ${shipment.trackingNumber}`;
+  historyError.hidden = true;
+  historyList.replaceChildren();
+  historyDialog.showModal();
+
+  try {
+    const response = await fetch(selectedUrl());
+    const data = await response.json();
+    if (!response.ok) return showHistoryError(data.error);
+    renderHistory(data.shipment.events);
+  } catch {
+    showHistoryError("Could not reach the server. Please try again.");
+  }
+}
+
+// Newest first, like the customer's view.
+function renderHistory(entries) {
+  historyList.replaceChildren(
+    ...[...entries].reverse().map((entry) => {
+      const item = document.createElement("li");
+      item.className = "history-item";
+      showEntry(item, entry);
+      return item;
+    }),
+  );
+}
+
+function showEntry(item, entry) {
+  const description = document.createElement("strong");
+  description.textContent = entry.description;
+  const details = document.createElement("span");
+  details.textContent = `${entry.location} · ${formatDateTime(entry.date)}`;
+  const text = document.createElement("div");
+  text.append(description, details);
+
+  item.replaceChildren(
+    text,
+    historyActions(
+      historyButton("Edit", `Edit the entry "${entry.description}"`, () => showEditEntry(item, entry)),
+      historyButton("Delete", `Delete the entry "${entry.description}"`, () => showDeleteEntry(item, entry), "button-danger-outline"),
+    ),
+  );
+}
+
+function showEditEntry(item, entry) {
+  const location = historyInput("location", entry.location, "Location", 120);
+  const description = historyInput("description", entry.description, "What happened", 200);
+
+  const save = document.createElement("button");
+  save.type = "submit";
+  save.textContent = "Save";
+
+  const form = document.createElement("form");
+  form.className = "history-edit";
+  form.append(location, description, historyActions(save, historyButton("Cancel", "Cancel editing", () => showEntry(item, entry))));
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    save.disabled = true;
+    await changeEntry("PUT", entry, { location: location.value, description: description.value });
+    save.disabled = false;
+  });
+
+  item.replaceChildren(form);
+  description.focus();
+}
+
+// Asks first, right in the list, instead of opening another dialog.
+function showDeleteEntry(item, entry) {
+  const question = document.createElement("span");
+  question.textContent = "Remove this entry? Customers will no longer see it.";
+
+  item.replaceChildren(
+    question,
+    historyActions(
+      historyButton("Remove", `Confirm removing "${entry.description}"`, () => changeEntry("DELETE", entry), "button-danger-outline"),
+      historyButton("Cancel", "Keep this entry", () => showEntry(item, entry)),
+    ),
+  );
+}
+
+async function changeEntry(method, entry, body) {
+  historyError.hidden = true;
+  try {
+    const options = { method };
+    if (body) {
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify(body);
+    }
+    const response = await fetch(`${selectedUrl()}/events/${entry.id}`, options);
+    const data = await response.json();
+    if (!response.ok) return showHistoryError(data.error);
+    renderHistory(data.shipment.events);
+  } catch {
+    showHistoryError("Could not reach the server. Please try again.");
+  }
+}
+
+function historyButton(label, ariaLabel, onClick, extraClass = "") {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `button-secondary ${extraClass}`.trim();
+  button.textContent = label;
+  button.setAttribute("aria-label", ariaLabel);
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function historyActions(...buttons) {
+  const actions = document.createElement("div");
+  actions.className = "row-actions";
+  actions.append(...buttons);
+  return actions;
+}
+
+function historyInput(name, value, label, maxLength) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.name = name;
+  input.value = value;
+  input.maxLength = maxLength;
+  input.required = true;
+  input.setAttribute("aria-label", label);
+  return input;
+}
+
+function showHistoryError(message) {
+  historyError.textContent = message;
+  historyError.hidden = false;
+}
+
+function formatDateTime(isoDate) {
+  return new Date(isoDate).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
 loadShipments();
