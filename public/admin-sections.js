@@ -1,4 +1,4 @@
-// The admin dashboard, users, and activity pages.
+// The admin dashboard, users, locations, and activity pages.
 //
 // Each page has one of these sections, so each part runs only where it's found.
 // Hiding pages from customers is only a courtesy: the server checks every request.
@@ -9,10 +9,12 @@ const adminDenied = document.querySelector("#admin-denied");
 const dashboardApp = document.querySelector("#dashboard-app");
 const usersApp = document.querySelector("#users-app");
 const activityApp = document.querySelector("#activity-app");
+const locationsApp = document.querySelector("#locations-app");
 
 if (dashboardApp) loadDashboard();
 if (usersApp) setUpUsers();
 if (activityApp) setUpActivity();
+if (locationsApp) setUpLocations();
 
 // --- Shared helpers -------------------------------------------------------
 
@@ -210,8 +212,8 @@ function weekLabel(isoDate) {
 
 // Each status has its name and count written next to its bar, so the bars
 // never depend on color alone.
-function drawStatusBars(byStatus, total) {
-  document.querySelector("#status-bars").replaceChildren(
+function drawStatusBars(byStatus, total, list = document.querySelector("#status-bars")) {
+  list.replaceChildren(
     ...byStatus.map(({ status, count }) => {
       const dot = element("span", "", `filter-dot dot-${status.toLowerCase().replaceAll(" ", "-")}`);
       const name = element("span", "", "status-bars-label");
@@ -471,4 +473,121 @@ function setUpActivity() {
   });
 
   load();
+}
+
+// --- Locations ------------------------------------------------------------
+
+function setUpLocations() {
+  const form = document.querySelector("#location-form");
+  const input = document.querySelector("#location-search");
+  const errorBox = document.querySelector("#location-error");
+  const busiest = document.querySelector("#busiest-places");
+  const report = document.querySelector("#location-report");
+  let latestRequest = 0;
+
+  const MATCH_LABELS = { sentFrom: "Sent from", goingTo: "Going to", lastSeen: "Last seen", passedThrough: "Passed through" };
+
+  async function showBusiestPlaces() {
+    try {
+      const data = await getAdminJson(`${ADMIN_API}/locations/busiest`);
+      if (!data) return;
+      document.querySelector("#busiest-list").replaceChildren(
+        ...data.places.map(({ place, shipments }) => {
+          const button = element("button", "", "place-button");
+          button.type = "button";
+          button.append(element("span", place), element("span", plural(shipments, "shipment"), "place-count"));
+          button.addEventListener("click", () => search(place));
+          const item = document.createElement("li");
+          item.append(button);
+          return item;
+        }),
+      );
+      document.querySelector("#busiest-empty").hidden = data.places.length > 0;
+      showSection(locationsApp);
+    } catch {
+      showLoadProblem();
+    }
+  }
+
+  async function search(place) {
+    input.value = place;
+    errorBox.hidden = true;
+    latestRequest += 1;
+    const thisRequest = latestRequest;
+
+    try {
+      const response = await fetch(`${ADMIN_API}/locations?search=${encodeURIComponent(place)}`);
+      const data = await response.json();
+      if (thisRequest !== latestRequest) return;
+      if (!response.ok) {
+        errorBox.textContent = data.error;
+        errorBox.hidden = false;
+        return;
+      }
+      showReport(data);
+      // The address remembers the search, so it can be shared or refreshed.
+      history.replaceState(null, "", `?place=${encodeURIComponent(place)}`);
+    } catch {
+      errorBox.textContent = "Could not reach the server. Please try again.";
+      errorBox.hidden = false;
+    }
+  }
+
+  function showReport(data) {
+    document.querySelector("#report-title").textContent =
+      `"${data.search}": ${plural(data.counts.connected, "shipment")} connected`;
+    for (const value of report.querySelectorAll("[data-count]")) {
+      value.textContent = data.counts[value.dataset.count].toLocaleString();
+    }
+    drawStatusBars(data.byStatus, data.counts.connected, document.querySelector("#location-status-bars"));
+
+    document.querySelector("#location-rows").replaceChildren(
+      ...data.shipments.map((shipment) => {
+        const badge = element("span", shipment.status, `status status-${shipment.status.toLowerCase().replaceAll(" ", "-")}`);
+        const tags = element("div", "", "match-tags");
+        for (const [key, label] of Object.entries(MATCH_LABELS)) {
+          if (shipment.matches[key]) tags.append(element("span", label, "match-tag"));
+        }
+        const row = document.createElement("tr");
+        row.append(
+          cell(shipment.trackingNumber),
+          cell(badge),
+          cell(shipment.origin),
+          cell(shipment.destination),
+          cell(shipment.lastLocation ?? "–"),
+          cell(tags),
+        );
+        return row;
+      }),
+    );
+
+    const listed = data.shipments.length;
+    document.querySelector("#location-list-note").textContent =
+      listed === 0
+        ? "No shipments are connected to this place."
+        : listed < data.counts.connected
+          ? `Showing the newest ${listed} of ${data.counts.connected.toLocaleString()}.`
+          : "";
+
+    busiest.hidden = true;
+    report.hidden = false;
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    search(input.value.trim());
+  });
+
+  // Clearing the search box goes back to the busiest places.
+  input.addEventListener("search", () => {
+    if (input.value) return;
+    report.hidden = true;
+    busiest.hidden = false;
+    errorBox.hidden = true;
+    history.replaceState(null, "", location.pathname);
+  });
+
+  showBusiestPlaces();
+  const fromAddress = new URLSearchParams(window.location.search).get("place");
+  if (fromAddress) search(fromAddress);
 }

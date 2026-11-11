@@ -24,6 +24,7 @@ const PAGES = {
   "/admin/dashboard": { title: "Dashboard · ShipTrack Lite", script: "admin-sections.js" },
   "/admin/users": { title: "Users · ShipTrack Lite", script: "admin-sections.js" },
   "/admin/activity": { title: "Activity · ShipTrack Lite", script: "admin-sections.js" },
+  "/admin/locations": { title: "Locations · ShipTrack Lite", script: "admin-sections.js" },
 };
 
 function count(text, pattern) {

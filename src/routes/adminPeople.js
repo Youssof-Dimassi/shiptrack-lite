@@ -1,6 +1,8 @@
 // Staff-only: users, the activity log, and the dashboard.
 //
 //   GET    /api/admin/dashboard                     → numbers and lists for the dashboard
+//   GET    /api/admin/locations?search=             → shipments connected to a place
+//   GET    /api/admin/locations/busiest             → the places used most
 //   GET    /api/admin/activity?page=&category=      → the activity log, newest first
 //   GET    /api/admin/users?page=&search=           → users
 //   PUT    /api/admin/users/:userId/role { role }   → make someone staff, or remove it
@@ -11,6 +13,7 @@ import { requireAdmin, requireAuth } from "../auth/middleware.js";
 import { runInTransaction } from "../db/database.js";
 import { ACTIVITY_CATEGORIES, listActivity, logActivity } from "../models/activityLog.js";
 import { getDashboardData } from "../models/dashboard.js";
+import { getBusiestPlaces, getLocationReport } from "../models/locations.js";
 import { deleteUser, findUserById, listUsers, setUserRoleById } from "../models/users.js";
 
 export const adminPeopleRouter = Router();
@@ -21,6 +24,18 @@ adminPeopleRouter.use(requireAuth, requireAdmin);
 
 adminPeopleRouter.get("/dashboard", (req, res) => {
   res.json(getDashboardData());
+});
+
+adminPeopleRouter.get("/locations", (req, res) => {
+  const search = req.query.search;
+  if (typeof search !== "string" || search.trim().length < 2 || search.trim().length > 100) {
+    return badRequest(res, "Please enter a place between 2 and 100 characters.");
+  }
+  res.json(getLocationReport(search.trim()));
+});
+
+adminPeopleRouter.get("/locations/busiest", (req, res) => {
+  res.json({ places: getBusiestPlaces() });
 });
 
 adminPeopleRouter.get("/activity", (req, res) => {

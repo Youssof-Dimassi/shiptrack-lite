@@ -1953,6 +1953,92 @@ button[type="submit"].button-danger:hover {
     font-size: 0.9rem;
 }
 
+/* ---------- Locations ---------- */
+
+.location-search {
+    justify-content: flex-start;
+}
+
+.location-search input {
+    flex: 1 1 260px;
+    max-width: 420px;
+}
+
+.place-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.place-button {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: var(--background);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.place-button:hover {
+    border-color: var(--accent-text);
+}
+
+.place-count {
+    flex: none;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.report-title,
+.report-subtitle {
+    margin: 8px 0 16px;
+    color: var(--heading);
+    font-size: 1.3rem;
+}
+
+.report-subtitle {
+    margin-top: 28px;
+}
+
+.definitions {
+    display: grid;
+    gap: 4px 0;
+    margin: 0;
+}
+
+.definitions dt {
+    font-weight: 600;
+}
+
+.definitions dd {
+    margin: 0 0 10px;
+    color: var(--muted);
+}
+
+.match-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.match-tag {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background-color: var(--accent-soft);
+    color: var(--accent-text);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 /* ---------- Account settings ---------- */
 
 .settings {
