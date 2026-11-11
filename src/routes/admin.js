@@ -13,6 +13,7 @@ import { Router } from "express";
 import { requireAdmin, requireAuth } from "../auth/middleware.js";
 import { runInTransaction } from "../db/database.js";
 import { enqueueJob } from "../jobs/queue.js";
+import { logActivity } from "../models/activityLog.js";
 import {
   SHIPMENT_STATUSES,
   TRACKING_NUMBER_PATTERN,
@@ -66,7 +67,13 @@ adminRouter.post("/shipments", (req, res) => {
   const { details, error } = readShipmentDetails(req.body);
   if (error) return badRequest(res, error);
 
-  res.status(201).json({ shipment: createShipment(details) });
+  // Each change and its activity log entry are saved together.
+  const shipment = runInTransaction(() => {
+    const created = createShipment(details);
+    logActivity(req.user, "shipment.created", `Created ${created.trackingNumber} (${created.origin} → ${created.destination})`);
+    return created;
+  });
+  res.status(201).json({ shipment });
 });
 
 adminRouter.put("/shipments/:trackingNumber", (req, res) => {
@@ -76,7 +83,11 @@ adminRouter.put("/shipments/:trackingNumber", (req, res) => {
   const { details, error } = readShipmentDetails(req.body);
   if (error) return badRequest(res, error);
 
-  const shipment = updateShipmentDetails(trackingNumber, details);
+  const shipment = runInTransaction(() => {
+    const updated = updateShipmentDetails(trackingNumber, details);
+    if (updated) logActivity(req.user, "shipment.edited", `Edited the details of ${trackingNumber}`);
+    return updated;
+  });
   if (!shipment) return notFound(res, trackingNumber);
 
   res.json({ shipment });
@@ -86,7 +97,12 @@ adminRouter.delete("/shipments/:trackingNumber", (req, res) => {
   const trackingNumber = readTrackingNumber(req);
   if (!trackingNumber) return badRequest(res, "Invalid tracking number.");
 
-  if (!deleteShipment(trackingNumber)) return notFound(res, trackingNumber);
+  const deleted = runInTransaction(() => {
+    const removed = deleteShipment(trackingNumber);
+    if (removed) logActivity(req.user, "shipment.deleted", `Deleted ${trackingNumber}`);
+    return removed;
+  });
+  if (!deleted) return notFound(res, trackingNumber);
 
   res.status(204).end();
 });
@@ -108,7 +124,10 @@ adminRouter.post("/shipments/:trackingNumber/events", (req, res) => {
   // an update without its emails, or emails about an update that wasn't saved.
   const result = runInTransaction(() => {
     const update = addShipmentUpdate(trackingNumber, { status, location, description });
-    if (update) enqueueJob("notify-shipment-update", { shipmentId: update.shipmentId, eventId: update.eventId, status });
+    if (update) {
+      enqueueJob("notify-shipment-update", { shipmentId: update.shipmentId, eventId: update.eventId, status });
+      logActivity(req.user, "shipment.updated", `Posted "${status}" on ${trackingNumber}: ${description}`);
+    }
     return update;
   });
   if (!result) return notFound(res, trackingNumber);
@@ -138,7 +157,12 @@ adminRouter.put("/shipments/:trackingNumber/events/:eventId", (req, res) => {
     return badRequest(res, `Please enter a description (up to ${MAX_DESCRIPTION_LENGTH} characters).`);
   }
 
-  if (!updateShipmentEvent(trackingNumber, eventId, { location, description })) {
+  const fixed = runInTransaction(() => {
+    const changed = updateShipmentEvent(trackingNumber, eventId, { location, description });
+    if (changed) logActivity(req.user, "shipment.history_edited", `Fixed a history entry on ${trackingNumber}`);
+    return changed;
+  });
+  if (!fixed) {
     return res.status(404).json({ error: "That history entry doesn't exist." });
   }
 
@@ -150,7 +174,11 @@ adminRouter.delete("/shipments/:trackingNumber/events/:eventId", (req, res) => {
   const eventId = readEventId(req);
   if (!trackingNumber || !eventId) return badRequest(res, "Invalid tracking number or history entry.");
 
-  const outcome = deleteShipmentEvent(trackingNumber, eventId);
+  const outcome = runInTransaction(() => {
+    const result = deleteShipmentEvent(trackingNumber, eventId);
+    if (result === "deleted") logActivity(req.user, "shipment.history_deleted", `Removed a history entry from ${trackingNumber}`);
+    return result;
+  });
   if (outcome === "not_found") return res.status(404).json({ error: "That history entry doesn't exist." });
   if (outcome === "last_entry") return res.status(409).json({ error: "A shipment needs at least one history entry." });
 

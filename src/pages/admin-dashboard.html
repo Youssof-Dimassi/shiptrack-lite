@@ -1,0 +1,60 @@
+<!-- title: Dashboard -->
+<!-- scripts: admin-sections.js -->
+<!-- layout: wide -->
+<!-- section: dashboard -->
+
+    <main class="admin-page">
+        <div class="container admin-container">
+            <p id="admin-loading" class="admin-note">Loading…</p>
+            <p id="admin-denied" class="message message-error" hidden>This page is for ShipTrack staff only.</p>
+
+            <div id="dashboard-app" hidden>
+                <h1>Dashboard</h1>
+
+                <div class="stat-tiles">
+                    <p class="stat-tile"><span class="stat-tile-value" data-total="shipments">0</span><span class="stat-tile-label">Shipments</span></p>
+                    <p class="stat-tile"><span class="stat-tile-value" data-total="active">0</span><span class="stat-tile-label">On the way</span></p>
+                    <p class="stat-tile"><span class="stat-tile-value" data-total="delivered">0</span><span class="stat-tile-label">Delivered</span></p>
+                    <p class="stat-tile" id="overdue-tile"><span class="stat-tile-value" data-total="overdue">0</span><span class="stat-tile-label">Overdue</span></p>
+                    <p class="stat-tile"><span class="stat-tile-value" id="average-delivery">–</span><span class="stat-tile-label">Average delivery time</span></p>
+                    <p class="stat-tile"><span class="stat-tile-value" data-total="customers">0</span><span class="stat-tile-label">Customers</span></p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <section class="panel" aria-labelledby="weekly-title">
+                        <h2 id="weekly-title">Shipments started per week</h2>
+                        <p class="panel-note">The last 8 weeks, by the date of each shipment's first entry</p>
+                        <div id="weekly-chart" class="chart"></div>
+                        <details class="chart-table">
+                            <summary>Show as a table</summary>
+                            <table>
+                                <thead><tr><th scope="col">Week starting</th><th scope="col">Shipments</th></tr></thead>
+                                <tbody id="weekly-table"></tbody>
+                            </table>
+                        </details>
+                    </section>
+
+                    <section class="panel" aria-labelledby="status-title">
+                        <h2 id="status-title">Shipments by status</h2>
+                        <p class="panel-note">Every shipment, by its current status</p>
+                        <ul id="status-bars" class="status-bars"></ul>
+                    </section>
+
+                    <section class="panel" aria-labelledby="overdue-title">
+                        <h2 id="overdue-title">Overdue shipments</h2>
+                        <p class="panel-note">Not delivered, and past their estimated delivery date</p>
+                        <ul id="overdue-list" class="panel-list"></ul>
+                        <p id="overdue-empty" class="admin-note" hidden>Nothing is overdue.</p>
+                    </section>
+
+                    <section class="panel" aria-labelledby="recent-title">
+                        <h2 id="recent-title">Recent activity</h2>
+                        <p class="panel-note">The latest changes made by staff</p>
+                        <ul id="recent-activity" class="panel-list"></ul>
+                        <p id="recent-empty" class="admin-note" hidden>No activity yet.</p>
+                        <p class="panel-link"><a href="/admin/activity">See all activity</a></p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>

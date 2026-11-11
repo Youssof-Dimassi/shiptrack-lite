@@ -1,0 +1,56 @@
+<!-- title: Users -->
+<!-- scripts: admin-sections.js -->
+<!-- layout: wide -->
+<!-- section: users -->
+
+    <main class="admin-page">
+        <div class="container admin-container">
+            <p id="admin-loading" class="admin-note">Loading…</p>
+            <p id="admin-denied" class="message message-error" hidden>This page is for ShipTrack staff only.</p>
+
+            <div id="users-app" hidden>
+                <h1>Users</h1>
+                <div id="admin-message" aria-live="polite"></div>
+
+                <div class="admin-toolbar">
+                    <input type="search" id="user-search" placeholder="Search by name or email" aria-label="Search users">
+                </div>
+
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Email confirmed</th>
+                                <th scope="col">Saved shipments</th>
+                                <th scope="col">Joined</th>
+                                <th scope="col"><span class="visually-hidden">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-rows"></tbody>
+                    </table>
+                </div>
+                <p id="no-users" class="admin-note" hidden>No users match your search.</p>
+
+                <nav class="pager" aria-label="Pages of users" hidden data-pager>
+                    <button type="button" class="button-secondary pager-previous">Previous</button>
+                    <span class="pager-info" aria-live="polite"></span>
+                    <button type="button" class="button-secondary pager-next">Next</button>
+                </nav>
+            </div>
+        </div>
+    </main>
+
+    <dialog id="confirm-dialog" class="admin-dialog" aria-labelledby="confirm-title">
+        <form id="confirm-form">
+            <h2 id="confirm-title"></h2>
+            <p id="confirm-text" class="dialog-text"></p>
+            <p class="form-error" role="alert" hidden></p>
+            <div class="dialog-actions">
+                <button type="button" class="button-secondary" data-close-dialog autofocus>Cancel</button>
+                <button type="submit" id="confirm-button"></button>
+            </div>
+        </form>
+    </dialog>

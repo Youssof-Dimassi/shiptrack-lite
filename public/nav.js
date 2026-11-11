@@ -14,8 +14,10 @@ async function updateAccountNav() {
 
     const { user } = await response.json();
 
-    const greeting = document.createElement("span");
+    const greeting = document.createElement("a");
     greeting.className = "nav-greeting";
+    greeting.href = "/account";
+    greeting.title = "Account settings";
     greeting.textContent = `Hi, ${user.name}`; // textContent: safe even if the name contains HTML
 
     const logoutButton = document.createElement("button");
@@ -34,7 +36,7 @@ async function updateAccountNav() {
     // This link is only a convenience. The real protection is on the server.
     if (user.role === "admin") {
       const adminLink = document.createElement("a");
-      adminLink.href = "/admin";
+      adminLink.href = "/admin/dashboard";
       adminLink.textContent = "Admin";
       accountNav.prepend(adminLink);
     }

@@ -8,6 +8,7 @@
 //   <!-- scripts: account.js -->        the page's own browser scripts
 //   <!-- layout: wide -->               optional: use the wider admin width
 //   <!-- description: ... -->           optional: the summary search engines show
+//   <!-- section: users -->             optional: an admin page; shows the admin tabs
 //
 // The server puts the two together when someone opens the page.
 
@@ -36,6 +37,13 @@ const DEFAULT_DESCRIPTION = "Track your shipments, see every stop they make, and
 export const pagesRouter = Router();
 
 pagesRouter.get("/", (req, res) => sendPage(res, "index"));
+
+// Admin pages live at /admin/dashboard, /admin/users, ...: the file is admin-users.html.
+pagesRouter.get("/admin/:section", (req, res, next) => {
+  const name = `admin-${req.params.section.replace(/\.html$/, "")}`;
+  if (!pageNames.has(name)) return next();
+  sendPage(res, name);
+});
 
 // Both /login and /login.html work.
 pagesRouter.get("/:page", (req, res, next) => {
@@ -72,7 +80,7 @@ export function buildPage(name) {
     description: escapeHtml(settings.description ?? DEFAULT_DESCRIPTION),
     scripts,
     container: settings.layout === "wide" ? "container admin-container" : "container",
-    content: content.trim(),
+    content: (settings.section ? adminTabs(settings.section) : "") + content.trim(),
   };
 
   // A misspelled placeholder like {{titel}} stops with a clear error, instead
@@ -81,6 +89,28 @@ export function buildPage(name) {
     if (!(key in values)) throw new Error(`Unknown placeholder ${placeholder} in src/pages/_layout.html`);
     return values[key];
   });
+}
+
+const ADMIN_SECTIONS = [
+  ["dashboard", "Dashboard", "/admin/dashboard"],
+  ["shipments", "Shipments", "/admin"],
+  ["users", "Users", "/admin/users"],
+  ["activity", "Activity", "/admin/activity"],
+];
+
+// The tab bar at the top of every admin page. aria-current marks the open tab
+// for screen readers, and the CSS uses it to highlight the tab.
+function adminTabs(active) {
+  const links = ADMIN_SECTIONS.map(([key, label, href]) =>
+    `            <a href="${href}"${key === active ? ' aria-current="page"' : ""}>${label}</a>`,
+  ).join("\n");
+  return `<nav class="admin-tabs" aria-label="Admin sections">
+        <div class="container admin-container">
+${links}
+        </div>
+    </nav>
+
+    `;
 }
 
 // Titles and descriptions go inside HTML attributes, so characters like " and

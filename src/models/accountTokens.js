@@ -8,11 +8,13 @@ import { db } from "../db/database.js";
 
 export const PASSWORD_RESET = "password_reset";
 export const EMAIL_CONFIRMATION = "email_confirmation";
+export const EMAIL_CHANGE = "email_change";
 
 const HOUR = 60 * 60 * 1000;
 const LIFETIME_MS = {
   [PASSWORD_RESET]: HOUR,
   [EMAIL_CONFIRMATION]: 24 * HOUR,
+  [EMAIL_CHANGE]: 24 * HOUR,
 };
 
 const deleteExpired = db.prepare("DELETE FROM account_tokens WHERE expires_at <= ?");

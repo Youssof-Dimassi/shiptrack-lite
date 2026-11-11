@@ -85,7 +85,7 @@ db.exec(`
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     token_hash TEXT    NOT NULL UNIQUE,
     user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    purpose    TEXT    NOT NULL CHECK (purpose IN ('password_reset', 'email_confirmation')),
+    purpose    TEXT    NOT NULL CHECK (purpose IN ('password_reset', 'email_confirmation', 'email_change')),
     expires_at TEXT    NOT NULL
   );
 
@@ -104,6 +104,19 @@ db.exec(`
     finished_at  INTEGER
   );
   CREATE INDEX IF NOT EXISTS jobs_due ON jobs (status, run_at);
+
+  -- What staff did, and when (see models/activityLog.js). The staff member's
+  -- name and email are copied in, so entries stay readable if they're deleted.
+  CREATE TABLE IF NOT EXISTS activity_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    occurred_at TEXT    NOT NULL,
+    actor_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    actor_name  TEXT    NOT NULL,
+    actor_email TEXT    NOT NULL,
+    action      TEXT    NOT NULL,
+    summary     TEXT    NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS activity_log_time ON activity_log (occurred_at);
 
   -- One row per logged-in browser.
   -- token_hash is a hash of the secret stored in the user's cookie, so a
@@ -149,6 +162,20 @@ const MIGRATIONS = [
   "ALTER TABLE users ADD COLUMN notify_shipment_updates INTEGER NOT NULL DEFAULT 1",
   "ALTER TABLE users ADD COLUMN unsubscribe_token TEXT",
   "CREATE UNIQUE INDEX IF NOT EXISTS users_unsubscribe_token ON users (unsubscribe_token)",
+  "ALTER TABLE users ADD COLUMN pending_email TEXT",
+  // SQLite can't change a CHECK rule in place, so the table is rebuilt with the
+  // new allowed value ('email_change') and the existing tokens copied over.
+  `CREATE TABLE account_tokens_new (
+     id         INTEGER PRIMARY KEY AUTOINCREMENT,
+     token_hash TEXT    NOT NULL UNIQUE,
+     user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+     purpose    TEXT    NOT NULL CHECK (purpose IN ('password_reset', 'email_confirmation', 'email_change')),
+     expires_at TEXT    NOT NULL
+   );
+   INSERT INTO account_tokens_new (id, token_hash, user_id, purpose, expires_at)
+     SELECT id, token_hash, user_id, purpose, expires_at FROM account_tokens;
+   DROP TABLE account_tokens;
+   ALTER TABLE account_tokens_new RENAME TO account_tokens;`,
 ];
 
 const { user_version: appliedMigrations } = db.prepare("PRAGMA user_version").get();

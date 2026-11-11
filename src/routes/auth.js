@@ -143,7 +143,7 @@ function startSession(res, userId) {
   res.cookie(SESSION_COOKIE, token, { ...cookieOptions(), maxAge: SESSION_DURATION_MS });
 }
 
-function cookieOptions() {
+export function cookieOptions() {
   return {
     httpOnly: true, // JavaScript in the page can't read it, so XSS can't steal it
     sameSite: "lax", // not sent with requests that other websites trigger in the background
