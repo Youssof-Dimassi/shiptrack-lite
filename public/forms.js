@@ -1,5 +1,6 @@
-// Account pages: log in, sign up, forgot password, choose a new password,
-// and the pages opened from email links (confirm email, unsubscribe).
+// The site's simple forms: log in, sign up, forgot password, choose a new
+// password, contact, and the pages opened from email links (confirm email,
+// unsubscribe).
 //
 // Each page has only one of these, so each part runs only where it's found.
 
@@ -7,11 +8,13 @@ const loginForm = document.querySelector("#login-form");
 const registerForm = document.querySelector("#register-form");
 const forgotForm = document.querySelector("#forgot-form");
 const resetForm = document.querySelector("#reset-form");
+const contactForm = document.querySelector("#contact-form");
 const linkAction = document.querySelector("#link-action");
 
 if (loginForm) handleForm(loginForm, "/api/auth/login", goHome);
 if (registerForm) handleForm(registerForm, "/api/auth/register", goHome);
 if (forgotForm) handleForm(forgotForm, "/api/auth/forgot-password", showDone);
+if (contactForm) handleForm(contactForm, "/api/contact", showDone);
 if (resetForm) setUpResetForm();
 if (linkAction) runLinkAction();
 

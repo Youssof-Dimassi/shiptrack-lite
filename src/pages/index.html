@@ -1,4 +1,5 @@
 <!-- scripts: track.js -->
+<!-- description: Track any ShipTrack shipment in seconds, see every stop it has made, and get an email the moment it moves. -->
 
     <main>
         <section id="track" class="hero">
@@ -15,8 +16,8 @@
             </svg>
             <div class="container">
                 <div class="hero-inner">
-                    <h1>Track Your Shipment</h1>
-                    <p class="hero-text">Enter your tracking number to see where your package is and where it has been.</p>
+                    <h1>Know where your shipment is, every step of the way</h1>
+                    <p class="hero-text">Track any ShipTrack shipment in seconds, see every stop it has made, and get an email the moment it moves.</p>
 
                     <form id="track-form" class="track-form">
                         <label for="tracking-number">Tracking number</label>
@@ -33,26 +34,158 @@
                     </form>
 
                     <div id="result" aria-live="polite"></div>
+
+                    <p class="hero-signup" data-hide-when-logged-in>New here? <a href="/register">Create a free account</a> to save shipments and get updates.</p>
                 </div>
             </div>
         </section>
 
-        <section id="about" class="features">
+        <section id="how-it-works" class="section">
             <div class="container">
-                <h2>Why ShipTrack Lite</h2>
+                <p class="eyebrow">How it works</p>
+                <h2 class="section-title">From tracking number to delivered, in three steps</h2>
+                <ol class="steps">
+                    <li class="step">
+                        <span class="step-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+                        </span>
+                        <h3>Enter your tracking number</h3>
+                        <p>Type the number from your receipt and see where your package is right away. No account needed.</p>
+                    </li>
+                    <li class="step">
+                        <span class="step-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+                        </span>
+                        <h3>Save it to your account</h3>
+                        <p>Create a free account and keep every shipment you care about in one list.</p>
+                    </li>
+                    <li class="step">
+                        <span class="step-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                        </span>
+                        <h3>Get an email when it moves</h3>
+                        <p>When our team posts an update, you get an email with the new status. Turn it off any time.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="section section-alt" aria-labelledby="preview-title">
+            <div class="container preview-grid">
+                <div class="preview-copy">
+                    <p class="eyebrow">See it in action</p>
+                    <h2 id="preview-title" class="section-title">Every stop, in one clear timeline</h2>
+                    <ul class="check-list">
+                        <li>The current status, at a glance</li>
+                        <li>Where your package has been, with dates and places</li>
+                        <li>An email the moment something changes</li>
+                    </ul>
+                    <a class="button-primary" href="#track">Track a shipment</a>
+                </div>
+
+                <figure id="preview" class="preview">
+                    <div class="preview-card">
+                        <div class="preview-head">
+                            <strong>ST01234567</strong>
+                            <span class="status status-out-for-delivery preview-badge">Out for Delivery</span>
+                        </div>
+                        <p class="preview-route">Lisbon, Portugal → Madrid, Spain</p>
+                        <div class="preview-progress" aria-hidden="true"><span></span></div>
+                        <ol class="timeline preview-steps">
+                            <li><strong>Out for delivery</strong><span>Madrid, Spain · 08:10</span></li>
+                            <li><strong>Arrived at local facility</strong><span>Madrid, Spain · Yesterday</span></li>
+                            <li><strong>Departed sorting hub</strong><span>Lisbon, Portugal · 2 days ago</span></li>
+                            <li><strong>Shipment created</strong><span>Lisbon, Portugal · 3 days ago</span></li>
+                        </ol>
+                    </div>
+                    <div class="preview-toast" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+                        <span><strong>Email sent</strong> ST01234567: Out for Delivery</span>
+                    </div>
+                    <figcaption>An example shipment, to show what tracking looks like.</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <p class="eyebrow">Why ShipTrack Lite</p>
+                <h2 class="section-title">Simple tracking that keeps you informed</h2>
                 <div class="feature-grid">
                     <article class="feature">
+                        <span class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+                        </span>
                         <h3>Complete History</h3>
                         <p>See every stop your shipment has made, with dates and locations.</p>
                     </article>
                     <article class="feature">
+                        <span class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+                        </span>
                         <h3>Clear Status</h3>
                         <p>Know at a glance whether a package is pending, on its way, or delivered.</p>
                     </article>
                     <article class="feature">
+                        <span class="feature-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+                        </span>
                         <h3>All in One Place</h3>
                         <p>Create an account and keep the shipments you care about in one list.</p>
                     </article>
+                </div>
+            </div>
+        </section>
+
+        <section id="stats-band" class="stats-band" aria-label="ShipTrack Lite in numbers" hidden>
+            <div class="container stats">
+                <p class="stat"><span class="stat-value" data-stat="shipments">0</span><span class="stat-label">shipments on ShipTrack Lite</span></p>
+                <p class="stat"><span class="stat-value" data-stat="updates">0</span><span class="stat-label">tracking updates posted</span></p>
+                <p class="stat"><span class="stat-value" data-stat="delivered">0</span><span class="stat-label">deliveries completed</span></p>
+            </div>
+        </section>
+
+        <section id="faq" class="section">
+            <div class="container">
+                <p class="eyebrow">FAQ</p>
+                <h2 class="section-title">Questions, answered</h2>
+                <div class="faq">
+                    <details>
+                        <summary>Where do I find my tracking number?</summary>
+                        <p>It's on the receipt or confirmation you got when the shipment was sent. It starts with ST, followed by 8 digits, for example ST10000001.</p>
+                    </details>
+                    <details>
+                        <summary>Do I need an account to track a shipment?</summary>
+                        <p>No. Anyone with the tracking number can see where it is. An account lets you save shipments and get an email when they're updated.</p>
+                    </details>
+                    <details>
+                        <summary>How do update emails work?</summary>
+                        <p>Save a shipment to your account and confirm your email address. Each time our team posts an update on that shipment, we email you the new status.</p>
+                    </details>
+                    <details>
+                        <summary>How do I stop the emails?</summary>
+                        <p>Every update email has a link to stop them, or you can turn them off on your My shipments page. You can turn them back on there too.</p>
+                    </details>
+                    <details>
+                        <summary>Who can see my shipments?</summary>
+                        <p>Your saved list is private to your account. A shipment's own status can be seen by anyone who has its tracking number, so share it only with people you trust.</p>
+                    </details>
+                    <details>
+                        <summary>I forgot my password. What do I do?</summary>
+                        <p>Use "Forgot your password?" on the log-in page. We'll email you a link to choose a new one. The link works once and expires after an hour.</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-band">
+            <div class="container">
+                <div class="cta-inner">
+                    <div>
+                        <h2>Never miss an update</h2>
+                        <p>Create a free account, save your shipments, and we'll email you when they move.</p>
+                    </div>
+                    <a class="button-primary button-large" href="/register" data-signup-link data-logged-in-text="Go to My shipments">Create a free account</a>
                 </div>
             </div>
         </section>

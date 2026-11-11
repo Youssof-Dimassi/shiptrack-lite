@@ -21,3 +21,6 @@ export function chooseEmailTransport(env) {
 }
 
 export const emailTransport = chooseEmailTransport(process.env);
+
+// Where contact form messages are sent.
+export const contactEmail = process.env.CONTACT_EMAIL ?? "support@shiptrack.example";

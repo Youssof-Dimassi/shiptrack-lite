@@ -1,0 +1,48 @@
+<!-- title: Contact -->
+<!-- scripts: forms.js -->
+<!-- description: Questions about a shipment or your account? Send the ShipTrack Lite team a message. -->
+
+    <main class="page">
+        <div class="container contact-grid">
+            <div class="prose">
+                <p class="eyebrow">Contact</p>
+                <h1>How can we help?</h1>
+                <p class="lead">Questions about a shipment, your account, or anything else? Send us a message and we'll reply by email.</p>
+                <h2>Before you write</h2>
+                <ul>
+                    <li>If it's about a shipment, include its tracking number.</li>
+                    <li>Forgot your password? You can <a href="/forgot-password">reset it yourself</a> right away.</li>
+                    <li>Many common questions are answered in our <a href="/#faq">FAQ</a>.</li>
+                </ul>
+            </div>
+
+            <form id="contact-form" class="auth-form">
+                <h2>Send a message</h2>
+
+                <label for="name">Your name</label>
+                <input type="text" id="name" name="name" autocomplete="name" maxlength="100" required>
+
+                <label for="email">Your email</label>
+                <input type="email" id="email" name="email" autocomplete="email" maxlength="254" required>
+
+                <label for="message">Message</label>
+                <textarea id="message" name="message" minlength="10" maxlength="2000" required></textarea>
+
+                <!-- A trap for spam robots: people never see or fill this field. -->
+                <div class="honeypot" aria-hidden="true">
+                    <label for="website">Leave this empty</label>
+                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                </div>
+
+                <p class="form-error" role="alert" hidden></p>
+
+                <button type="submit">Send message</button>
+            </form>
+
+            <section id="done" class="auth-form" hidden>
+                <h2>Message sent</h2>
+                <p class="auth-note"></p>
+                <p class="form-switch"><a href="/">Back to the home page</a></p>
+            </section>
+        </div>
+    </main>

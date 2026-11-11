@@ -24,8 +24,9 @@ import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { myShipmentsRouter } from "./routes/myShipments.js";
 import { notificationsRouter } from "./routes/notifications.js";
-import { pagesRouter } from "./routes/pages.js";
+import { buildPage, pagesRouter } from "./routes/pages.js";
 import { shipmentsRouter } from "./routes/shipments.js";
+import { siteRouter } from "./routes/site.js";
 
 // Find the absolute path of the /public folder, no matter where the
 // server is started from.
@@ -91,6 +92,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/auth", accountRouter);
 app.use("/api/my-shipments", myShipmentsRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api", siteRouter);
 app.use("/api/shipments", shipmentsRouter);
 app.use("/api/admin", adminRouter);
 
@@ -111,7 +113,8 @@ app.use(express.static(publicDir));
 // --- 4. Not found (404) ---------------------------------------------------
 
 app.use((req, res) => {
-  res.status(404).send("404 - Page not found");
+  // A proper page with a way back, instead of a plain error message.
+  res.status(404).type("html").send(buildPage("_not-found"));
 });
 
 // --- 5. Server error (500) ------------------------------------------------

@@ -221,3 +221,16 @@ export function findEventForEmail(shipmentId, eventId) {
     description: row.description,
   };
 }
+
+// --- Totals for the home page ----------------------------------------------
+
+const selectStats = db.prepare(`
+  SELECT (SELECT COUNT(*) FROM shipments) AS shipments,
+         (SELECT COUNT(*) FROM shipment_events) AS updates,
+         (SELECT COUNT(*) FROM shipments WHERE status = 'Delivered') AS delivered
+`);
+
+export function getPublicStats() {
+  const { shipments, updates, delivered } = selectStats.get();
+  return { shipments, updates, delivered };
+}

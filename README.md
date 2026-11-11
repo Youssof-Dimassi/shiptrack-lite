@@ -18,10 +18,11 @@ shiptrack-lite/
 │   ├── theme.js           Light and dark mode
 │   ├── nav.js             Shows "Log in" or the account links
 │   ├── track.js           Tracking form on the home page
-│   ├── account.js         Log in, sign up, password reset, and email links
+│   ├── forms.js           Log in, sign up, password reset, contact, and email links
 │   ├── my-shipments.js    A customer's saved shipments
 │   ├── admin.js           Staff dashboard
-│   └── favicon.svg
+│   ├── favicon.svg
+│   └── robots.txt         Asks search engines not to list private pages
 ├── src/             Server code (runs on the server, never sent to the browser)
 │   ├── pages/             The pages. _layout.html holds the shared head, header, and footer;
 │   │                      each page file only holds that page's content.
@@ -35,7 +36,8 @@ shiptrack-lite/
 │   │   ├── myShipments.js A customer's saved shipments
 │   │   ├── notifications.js Update email settings and unsubscribing
 │   │   ├── pages.js       Builds each page from the shared layout
-│   │   └── shipments.js   Shipment lookup
+│   │   ├── shipments.js   Shipment lookup
+│   │   └── site.js        Home page numbers and the contact form
 │   ├── auth/
 │   │   ├── passwords.js   Password hashing (scrypt)
 │   │   ├── middleware.js  Reads the login cookie, sets req.user
@@ -111,6 +113,9 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `GET /api/my-shipments` | The logged-in customer's saved shipments |
 | `POST /api/my-shipments` | Save a shipment `{ trackingNumber }` |
 | `DELETE /api/my-shipments/:trackingNumber` | Remove a saved shipment |
+| `GET /about`, `/contact`, `/privacy`, `/terms` | Company and legal pages |
+| `GET /api/stats` | Real totals for the home page |
+| `POST /api/contact` | Send a message to the team `{ name, email, message }` |
 | `GET /api/config` | Public settings the browser needs |
 | `GET /admin` | Staff dashboard |
 | `GET /api/admin/shipments` | One page of shipments, with optional `page`, `search`, and `status` (admin only) |
@@ -148,6 +153,7 @@ Admin rights can only be granted from the terminal, never from the website.
 | Sign-up attempts from one address | 20 per hour |
 | Tracking number lookups from one address | 60 per minute |
 | Password reset requests from one address | 10 per hour |
+| Contact form messages from one address | 5 per hour |
 | Password reset emails to one account | 3 per hour |
 
 Blocked requests get a `429` response with a `Retry-After` header.
@@ -181,6 +187,7 @@ In production without `SMTP_URL`, emails are not sent or printed, because they c
 | `APP_URL` | The site's public address, used for links in emails | `http://localhost:3000` |
 | `SMTP_URL` | The mail server, e.g. `smtp://user:password@host:587` | not set |
 | `EMAIL_FROM` | The sender shown on emails | `ShipTrack Lite <no-reply@shiptrack.example>` |
+| `CONTACT_EMAIL` | Where contact form messages are sent | `support@shiptrack.example` |
 | `RUN_JOBS` | Set to `false` to stop the server running background jobs | runs them |
 | `SEED_DEMO_DATA` | `true` or `false` to override demo mode | on, except in production |
 
@@ -214,3 +221,8 @@ Every change follows this flow:
 3. Push the branch and open a Pull Request
 4. Review, then merge into `main`
 5. Update local `main` with `git pull origin main`
+
+## Legal pages
+
+`src/pages/privacy.html` and `src/pages/terms.html` describe what this app actually does with data.
+They are a starting point, not legal advice: have them reviewed before running a real business on them.

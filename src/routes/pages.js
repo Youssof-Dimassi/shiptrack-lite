@@ -7,6 +7,7 @@
 //   <!-- title: Log in -->              shown in the browser tab
 //   <!-- scripts: account.js -->        the page's own browser scripts
 //   <!-- layout: wide -->               optional: use the wider admin width
+//   <!-- description: ... -->           optional: the summary search engines show
 //
 // The server puts the two together when someone opens the page.
 
@@ -29,6 +30,8 @@ const pageNames = new Set(
 // In production, pages are built once and kept. While developing they're
 // rebuilt on every visit, so changes show up after a refresh.
 const builtPages = new Map();
+
+const DEFAULT_DESCRIPTION = "Track your shipments, see every stop they make, and get an email when they move.";
 
 export const pagesRouter = Router();
 
@@ -65,7 +68,8 @@ export function buildPage(name) {
     .join("\n");
 
   const values = {
-    title: settings.title ? `${settings.title} · ShipTrack Lite` : "ShipTrack Lite",
+    title: escapeHtml(settings.title ? `${settings.title} · ShipTrack Lite` : "ShipTrack Lite"),
+    description: escapeHtml(settings.description ?? DEFAULT_DESCRIPTION),
     scripts,
     container: settings.layout === "wide" ? "container admin-container" : "container",
     content: content.trim(),
@@ -77,4 +81,10 @@ export function buildPage(name) {
     if (!(key in values)) throw new Error(`Unknown placeholder ${placeholder} in src/pages/_layout.html`);
     return values[key];
   });
+}
+
+// Titles and descriptions go inside HTML attributes, so characters like " and
+// < are written in their safe HTML form.
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`);
 }
