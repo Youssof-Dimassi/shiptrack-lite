@@ -13,22 +13,18 @@ A simplified shipment-tracking web application, built step by step as a hands-on
 
 ```text
 shiptrack-lite/
-├── public/          Files sent to the browser (HTML, CSS, browser JavaScript)
-│   ├── index.html         Home page with the tracking form
-│   ├── login.html         Log-in page
-│   ├── admin.html         Staff dashboard
-│   ├── admin.js           Dashboard behavior
-│   ├── register.html      Sign-up page
-│   ├── forgot-password.html, reset-password.html, password.js   Password reset
-│   ├── confirm-email.html, confirm-email.js                     Email confirmation
-│   ├── my-shipments.html  A customer's saved shipments
-│   ├── my-shipments.js    Behavior of that page
+├── public/          Files sent to the browser as they are
 │   ├── style.css
-│   ├── app.js             Tracking form: calls the API, shows the result
-│   ├── account.js         Log-in and sign-up forms
 │   ├── theme.js           Light and dark mode
-│   └── nav.js             Shows "Log in" or "Hi, <name> · Log out"
+│   ├── nav.js             Shows "Log in" or the account links
+│   ├── track.js           Tracking form on the home page
+│   ├── account.js         Log in, sign up, password reset, and email links
+│   ├── my-shipments.js    A customer's saved shipments
+│   ├── admin.js           Staff dashboard
+│   └── favicon.svg
 ├── src/             Server code (runs on the server, never sent to the browser)
+│   ├── pages/             The pages. _layout.html holds the shared head, header, and footer;
+│   │                      each page file only holds that page's content.
 │   ├── app.js             Builds the app and connects all the pieces
 │   ├── config.js          Settings that depend on the environment
 │   ├── server.js          Starts the app
@@ -37,6 +33,8 @@ shiptrack-lite/
 │   │   ├── account.js     Password reset and email confirmation
 │   │   ├── admin.js       Staff-only shipment management
 │   │   ├── myShipments.js A customer's saved shipments
+│   │   ├── notifications.js Update email settings and unsubscribing
+│   │   ├── pages.js       Builds each page from the shared layout
 │   │   └── shipments.js   Shipment lookup
 │   ├── auth/
 │   │   ├── passwords.js   Password hashing (scrypt)

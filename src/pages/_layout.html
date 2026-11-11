@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unsubscribe · ShipTrack Lite</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <script src="theme.js"></script>
+    <title>{{title}}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <script src="/theme.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-    <link rel="stylesheet" href="style.css">
-    <script src="unsubscribe.js" defer></script>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/nav.js" defer></script>
+{{scripts}}
 </head>
 <body>
     <header class="site-header">
-        <div class="container header-inner">
+        <div class="{{container}} header-inner">
             <a class="brand" href="/">
                 <svg viewBox="0 0 28 28" aria-hidden="true">
                     <rect width="28" height="28" rx="6" fill="#0f2439"/>
@@ -24,23 +25,18 @@
             </a>
             <nav class="site-nav" aria-label="Main">
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/login">Log in</a></li>
+                    <li><a href="/#track">Track</a></li>
+                    <li><a href="/#about">About</a></li>
+                    <li id="account-nav"><a href="/login">Log in</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <main class="auth-page">
-        <section class="auth-form" aria-live="polite">
-            <h1 id="unsubscribe-title">Unsubscribing…</h1>
-            <p id="unsubscribe-text" class="auth-note">This will only take a moment.</p>
-            <p class="form-switch"><a href="/my-shipments">Go to My shipments</a></p>
-        </section>
-    </main>
+    {{content}}
 
     <footer class="site-footer">
-        <div class="container">
+        <div class="{{container}}">
             <p>&copy; 2026 ShipTrack Lite</p>
         </div>
     </footer>
