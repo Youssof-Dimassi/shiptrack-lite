@@ -1,0 +1,10 @@
+# Tells search engines which pages to list.
+# This isn't security: anyone can still open these addresses. Those pages
+# are protected by logins and checks on the server.
+User-agent: *
+Disallow: /admin
+Disallow: /api/
+Disallow: /my-shipments
+Disallow: /reset-password
+Disallow: /confirm-email
+Disallow: /unsubscribe

@@ -8,14 +8,14 @@ export const sentEmails = [];
 
 const smtpTransport = emailTransport === "smtp" ? nodemailer.createTransport(process.env.SMTP_URL) : null;
 
-export async function sendEmail({ to, subject, text, headers = {} }) {
+export async function sendEmail({ to, subject, text, headers = {}, replyTo }) {
   if (emailTransport === "memory") {
-    sentEmails.push({ to, subject, text, headers });
+    sentEmails.push({ to, subject, text, headers, replyTo });
     return;
   }
 
   if (emailTransport === "smtp") {
-    await smtpTransport.sendMail({ from: emailFrom, to, subject, text, headers });
+    await smtpTransport.sendMail({ from: emailFrom, to, subject, text, headers, replyTo });
     return;
   }
 

@@ -7,14 +7,18 @@ const visitor = createClient();
 
 const PAGES = {
   "/": { title: "ShipTrack Lite", script: "track.js" },
-  "/login": { title: "Log in · ShipTrack Lite", script: "account.js" },
-  "/register": { title: "Sign up · ShipTrack Lite", script: "account.js" },
-  "/forgot-password": { title: "Forgot password · ShipTrack Lite", script: "account.js" },
-  "/reset-password": { title: "Choose a new password · ShipTrack Lite", script: "account.js" },
-  "/confirm-email": { title: "Confirm your email · ShipTrack Lite", script: "account.js" },
-  "/unsubscribe": { title: "Unsubscribe · ShipTrack Lite", script: "account.js" },
+  "/login": { title: "Log in · ShipTrack Lite", script: "forms.js" },
+  "/register": { title: "Sign up · ShipTrack Lite", script: "forms.js" },
+  "/forgot-password": { title: "Forgot password · ShipTrack Lite", script: "forms.js" },
+  "/reset-password": { title: "Choose a new password · ShipTrack Lite", script: "forms.js" },
+  "/confirm-email": { title: "Confirm your email · ShipTrack Lite", script: "forms.js" },
+  "/unsubscribe": { title: "Unsubscribe · ShipTrack Lite", script: "forms.js" },
   "/my-shipments": { title: "My shipments · ShipTrack Lite", script: "my-shipments.js" },
   "/admin": { title: "Admin · ShipTrack Lite", script: "admin.js" },
+  "/contact": { title: "Contact · ShipTrack Lite", script: "forms.js" },
+  "/about": { title: "About us · ShipTrack Lite", script: "nav.js" },
+  "/privacy": { title: "Privacy policy · ShipTrack Lite", script: "nav.js" },
+  "/terms": { title: "Terms of service · ShipTrack Lite", script: "nav.js" },
 };
 
 function count(text, pattern) {
@@ -39,6 +43,7 @@ describe("every page", () => {
         assert.equal(count(text, new RegExp(`"/${shared}"`, "g")), 1, `${shared} should appear once`);
       }
       assert.match(text, new RegExp(`<script src="/${script}" defer></script>`));
+      assert.equal(count(text, /<meta name="description"/g), 1);
     });
 
     it(`${path} has no leftover template markers`, async () => {

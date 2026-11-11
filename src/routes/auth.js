@@ -16,7 +16,7 @@ import { createUser, findUserByEmailWithPassword } from "../models/users.js";
 
 export const authRouter = Router();
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
 const MAX_EMAIL_LENGTH = 254;

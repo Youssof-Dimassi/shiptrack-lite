@@ -18,6 +18,9 @@ const server = app.listen(PORT, () => {
 if (isProduction && emailTransport === "disabled") {
   console.warn("WARNING: SMTP_URL isn't set, so password reset and confirmation emails won't be sent.");
 }
+if (isProduction && !process.env.CONTACT_EMAIL) {
+  console.warn("WARNING: CONTACT_EMAIL isn't set, so contact form messages go to a placeholder address.");
+}
 if (isProduction && !process.env.APP_URL) {
   console.warn("WARNING: APP_URL isn't set, so links in emails will point to localhost.");
 }

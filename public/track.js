@@ -168,4 +168,73 @@ if (trackFromUrl) {
   form.requestSubmit();
 }
 
+// --- Home page extras -----------------------------------------------------
+
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// The live numbers, counted up from zero. Shown only once they've loaded.
+async function showStats() {
+  try {
+    const response = await fetch("/api/stats");
+    if (!response.ok) return;
+    const stats = await response.json();
+    for (const element of document.querySelectorAll("[data-stat]")) {
+      countUp(element, stats[element.dataset.stat] ?? 0);
+    }
+    document.querySelector("#stats-band").hidden = false;
+  } catch {
+    // The numbers are extra, so the page works fine without them.
+  }
+}
+
+function countUp(element, target) {
+  if (prefersReducedMotion || target === 0) {
+    element.textContent = target.toLocaleString();
+    return;
+  }
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min((now - start) / 900, 1);
+    const eased = 1 - (1 - progress) ** 3; // fast at first, then gently slowing down
+    element.textContent = Math.round(target * eased).toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Logged-in visitors don't need "Create an account", so point them to their list.
+async function personalizeForLoggedInVisitors() {
+  try {
+    const response = await fetch("/api/auth/me");
+    if (!response.ok) return;
+    for (const element of document.querySelectorAll("[data-hide-when-logged-in]")) element.hidden = true;
+    for (const link of document.querySelectorAll("[data-signup-link]")) {
+      link.href = "/my-shipments";
+      link.textContent = link.dataset.loggedInText;
+    }
+  } catch {
+    // Keep the sign-up links.
+  }
+}
+
+// The example card plays its animation once, when it scrolls into view.
+// Without JavaScript, or for people who prefer less motion, it simply
+// shows the finished card.
+function playPreviewWhenVisible() {
+  const preview = document.querySelector("#preview");
+  if (!preview || prefersReducedMotion || !("IntersectionObserver" in window)) return;
+
+  preview.classList.add("will-animate");
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      preview.classList.add("is-playing");
+      observer.disconnect();
+    }
+  }, { threshold: 0.4 });
+  observer.observe(preview);
+}
+
 showDemoHint();
+showStats();
+personalizeForLoggedInVisitors();
+playPreviewWhenVisible();
