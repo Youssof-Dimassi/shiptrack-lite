@@ -21,7 +21,7 @@ shiptrack-lite/
 │   ├── forms.js           Log in, sign up, password reset, contact, and email links
 │   ├── my-shipments.js    A customer's saved shipments
 │   ├── admin.js           Staff: shipments
-│   ├── admin-sections.js  Staff: dashboard, users, and activity log
+│   ├── admin-sections.js  Staff: dashboard, users, locations, and activity log
 │   ├── account.js         Account settings
 │   ├── favicon.svg
 │   └── robots.txt         Asks search engines not to list private pages
@@ -59,6 +59,7 @@ shiptrack-lite/
 │       ├── sessions.js
 │       ├── activityLog.js
 │       ├── dashboard.js
+│       ├── locations.js
 │       ├── accountTokens.js
 │       ├── savedShipments.js
 │       └── rateLimits.js
@@ -124,7 +125,7 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/contact` | Send a message to the team `{ name, email, message }` |
 | `GET /api/config` | Public settings the browser needs |
 | `GET /admin` | Staff: shipments |
-| `GET /admin/dashboard`, `/admin/users`, `/admin/activity` | Staff: dashboard, users, activity log |
+| `GET /admin/dashboard`, `/admin/users`, `/admin/locations`, `/admin/activity` | Staff: dashboard, users, location report, activity log |
 | `GET /account` | Account settings |
 | `PUT /api/account/profile` | Change your name `{ name }` |
 | `PUT /api/account/password` | Change your password `{ currentPassword, newPassword }` |
@@ -132,6 +133,8 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `POST /api/account/confirm-email-change` | Confirm the new email `{ token }` |
 | `DELETE /api/account` | Delete your account `{ password }` |
 | `GET /api/admin/dashboard` | Dashboard numbers (admin only) |
+| `GET /api/admin/locations?search=` | Shipments sent from, going to, last seen at, or passing through a place (admin only) |
+| `GET /api/admin/locations/busiest` | The 10 places used in the most shipments (admin only) |
 | `GET /api/admin/activity` | The activity log, with optional `page` and `category` (admin only) |
 | `GET /api/admin/users` | Users, with optional `page` and `search` (admin only) |
 | `PUT /api/admin/users/:userId/role` | Make someone an admin or a customer `{ role }` (admin only) |

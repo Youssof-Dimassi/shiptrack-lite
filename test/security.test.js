@@ -42,7 +42,7 @@ describe("security headers", () => {
   });
 
   it("every page loads only scripts from this site", async () => {
-    for (const path of ["/", "/login", "/register", "/admin", "/my-shipments", "/forgot-password", "/reset-password", "/confirm-email", "/unsubscribe", "/about", "/contact", "/privacy", "/terms", "/account", "/confirm-email-change", "/admin/dashboard", "/admin/users", "/admin/activity", "/this-page-does-not-exist"]) {
+    for (const path of ["/", "/login", "/register", "/admin", "/my-shipments", "/forgot-password", "/reset-password", "/confirm-email", "/unsubscribe", "/about", "/contact", "/privacy", "/terms", "/account", "/confirm-email-change", "/admin/dashboard", "/admin/users", "/admin/activity", "/admin/locations", "/this-page-does-not-exist"]) {
       const { text, status } = await visitor("GET", path);
       assert.ok(status === 200 || path === "/this-page-does-not-exist", path);
       for (const [, source] of text.matchAll(/<script[^>]*\ssrc="([^"]+)"/g)) {

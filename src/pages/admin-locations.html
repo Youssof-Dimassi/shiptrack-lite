@@ -1,0 +1,76 @@
+<!-- title: Locations -->
+<!-- scripts: admin-sections.js -->
+<!-- layout: wide -->
+<!-- section: locations -->
+
+    <main class="admin-page">
+        <div class="container admin-container">
+            <p id="admin-loading" class="admin-note">Loading…</p>
+            <p id="admin-denied" class="message message-error" hidden>This page is for ShipTrack staff only.</p>
+
+            <div id="locations-app" hidden>
+                <h1>Locations</h1>
+                <p class="admin-intro">Search a city, country, or hub to see how many shipments are connected to it.</p>
+
+                <form id="location-form" class="admin-toolbar location-search">
+                    <label class="visually-hidden" for="location-search">Place</label>
+                    <input type="search" id="location-search" name="place" placeholder="e.g. Beirut" minlength="2" maxlength="100" required>
+                    <button type="submit">Search</button>
+                </form>
+                <p id="location-error" class="message message-error" hidden></p>
+
+                <section id="busiest-places" class="panel" aria-labelledby="busiest-title">
+                    <h2 id="busiest-title">Busiest places</h2>
+                    <p class="panel-note">Places mentioned in the most shipments. Select one to see its report.</p>
+                    <ul id="busiest-list" class="place-list"></ul>
+                    <p id="busiest-empty" class="admin-note" hidden>No shipments yet.</p>
+                </section>
+
+                <div id="location-report" hidden>
+                    <h2 id="report-title" class="report-title"></h2>
+
+                    <div class="stat-tiles">
+                        <p class="stat-tile"><span class="stat-tile-value" data-count="sentFrom">0</span><span class="stat-tile-label">Sent from here</span></p>
+                        <p class="stat-tile"><span class="stat-tile-value" data-count="goingTo">0</span><span class="stat-tile-label">Going here</span></p>
+                        <p class="stat-tile"><span class="stat-tile-value" data-count="lastSeen">0</span><span class="stat-tile-label">Last seen here</span></p>
+                        <p class="stat-tile"><span class="stat-tile-value" data-count="passedThrough">0</span><span class="stat-tile-label">Passed through</span></p>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <section class="panel" aria-labelledby="location-status-title">
+                            <h2 id="location-status-title">By status</h2>
+                            <p class="panel-note">Every shipment connected to this place, by its current status</p>
+                            <ul id="location-status-bars" class="status-bars"></ul>
+                        </section>
+                        <section class="panel" aria-labelledby="location-help-title">
+                            <h2 id="location-help-title">What the numbers mean</h2>
+                            <dl class="definitions">
+                                <dt>Sent from here</dt><dd>The shipment started at this place.</dd>
+                                <dt>Going here</dt><dd>This place is the shipment's destination.</dd>
+                                <dt>Last seen here</dt><dd>The shipment's latest update is at this place: it's there now, or was delivered there.</dd>
+                                <dt>Passed through</dt><dd>At least one update in the shipment's history is at this place.</dd>
+                            </dl>
+                        </section>
+                    </div>
+
+                    <h2 class="report-subtitle">Shipments</h2>
+                    <div class="table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Tracking number</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">From</th>
+                                    <th scope="col">To</th>
+                                    <th scope="col">Last seen</th>
+                                    <th scope="col">Connected as</th>
+                                </tr>
+                            </thead>
+                            <tbody id="location-rows"></tbody>
+                        </table>
+                    </div>
+                    <p id="location-list-note" class="admin-note"></p>
+                </div>
+            </div>
+        </div>
+    </main>

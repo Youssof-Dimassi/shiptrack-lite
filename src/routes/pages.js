@@ -95,6 +95,7 @@ const ADMIN_SECTIONS = [
   ["dashboard", "Dashboard", "/admin/dashboard"],
   ["shipments", "Shipments", "/admin"],
   ["users", "Users", "/admin/users"],
+  ["locations", "Locations", "/admin/locations"],
   ["activity", "Activity", "/admin/activity"],
 ];
 
