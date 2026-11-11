@@ -19,6 +19,11 @@ const PAGES = {
   "/about": { title: "About us · ShipTrack Lite", script: "nav.js" },
   "/privacy": { title: "Privacy policy · ShipTrack Lite", script: "nav.js" },
   "/terms": { title: "Terms of service · ShipTrack Lite", script: "nav.js" },
+  "/account": { title: "Account settings · ShipTrack Lite", script: "account.js" },
+  "/confirm-email-change": { title: "Confirm your new email · ShipTrack Lite", script: "forms.js" },
+  "/admin/dashboard": { title: "Dashboard · ShipTrack Lite", script: "admin-sections.js" },
+  "/admin/users": { title: "Users · ShipTrack Lite", script: "admin-sections.js" },
+  "/admin/activity": { title: "Activity · ShipTrack Lite", script: "admin-sections.js" },
 };
 
 function count(text, pattern) {

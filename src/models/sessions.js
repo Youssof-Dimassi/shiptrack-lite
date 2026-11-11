@@ -23,6 +23,7 @@ const selectSession = db.prepare(`
 const deleteSession = db.prepare("DELETE FROM sessions WHERE token_hash = ?");
 const deleteExpired = db.prepare("DELETE FROM sessions WHERE expires_at <= ?");
 const deleteAllForUser = db.prepare("DELETE FROM sessions WHERE user_id = ?");
+const deleteOthersForUser = db.prepare("DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?");
 
 function hashToken(token) {
   return createHash("sha256").update(token).digest("hex");
@@ -50,4 +51,9 @@ export function destroySession(token) {
 
 export function destroyAllSessionsForUser(userId) {
   deleteAllForUser.run(userId);
+}
+
+// Logs the user out everywhere except the browser with this token.
+export function destroyOtherSessions(userId, keepToken) {
+  deleteOthersForUser.run(userId, keepToken ? hashToken(keepToken) : "");
 }

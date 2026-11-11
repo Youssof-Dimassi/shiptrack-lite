@@ -1,0 +1,45 @@
+<!-- title: Activity -->
+<!-- scripts: admin-sections.js -->
+<!-- layout: wide -->
+<!-- section: activity -->
+
+    <main class="admin-page">
+        <div class="container admin-container">
+            <p id="admin-loading" class="admin-note">Loading…</p>
+            <p id="admin-denied" class="message message-error" hidden>This page is for ShipTrack staff only.</p>
+
+            <div id="activity-app" hidden>
+                <h1>Activity</h1>
+                <p class="admin-intro">Every change made by staff, newest first. Entries are kept for one year.</p>
+
+                <div class="admin-toolbar">
+                    <label class="visually-hidden" for="activity-filter">Show</label>
+                    <select id="activity-filter">
+                        <option value="">All activity</option>
+                        <option value="shipment">Shipments</option>
+                        <option value="user">Users</option>
+                    </select>
+                </div>
+
+                <div class="table-wrap">
+                    <table class="admin-table activity-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">When</th>
+                                <th scope="col">Who</th>
+                                <th scope="col">What</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-rows"></tbody>
+                    </table>
+                </div>
+                <p id="no-activity" class="admin-note" hidden>Nothing here yet.</p>
+
+                <nav class="pager" aria-label="Pages of activity" hidden data-pager>
+                    <button type="button" class="button-secondary pager-previous">Previous</button>
+                    <span class="pager-info" aria-live="polite"></span>
+                    <button type="button" class="button-secondary pager-next">Next</button>
+                </nav>
+            </div>
+        </div>
+    </main>

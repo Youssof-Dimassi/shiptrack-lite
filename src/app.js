@@ -20,7 +20,9 @@ import { loadUser } from "./auth/middleware.js";
 import { demoMode, isProduction } from "./config.js";
 import "./jobs/definitions.js";
 import { accountRouter } from "./routes/account.js";
+import { accountSettingsRouter } from "./routes/accountSettings.js";
 import { adminRouter } from "./routes/admin.js";
+import { adminPeopleRouter } from "./routes/adminPeople.js";
 import { authRouter } from "./routes/auth.js";
 import { myShipmentsRouter } from "./routes/myShipments.js";
 import { notificationsRouter } from "./routes/notifications.js";
@@ -95,6 +97,8 @@ app.use("/api/notifications", notificationsRouter);
 app.use("/api", siteRouter);
 app.use("/api/shipments", shipmentsRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/admin", adminPeopleRouter);
+app.use("/api/account", accountSettingsRouter);
 
 // Any other /api address that doesn't exist: answer in JSON, not HTML,
 // because API callers expect JSON.

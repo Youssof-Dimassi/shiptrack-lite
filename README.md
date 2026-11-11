@@ -20,7 +20,9 @@ shiptrack-lite/
 │   ├── track.js           Tracking form on the home page
 │   ├── forms.js           Log in, sign up, password reset, contact, and email links
 │   ├── my-shipments.js    A customer's saved shipments
-│   ├── admin.js           Staff dashboard
+│   ├── admin.js           Staff: shipments
+│   ├── admin-sections.js  Staff: dashboard, users, and activity log
+│   ├── account.js         Account settings
 │   ├── favicon.svg
 │   └── robots.txt         Asks search engines not to list private pages
 ├── src/             Server code (runs on the server, never sent to the browser)
@@ -33,6 +35,8 @@ shiptrack-lite/
 │   │   ├── auth.js        Register, log in, log out, "who am I?"
 │   │   ├── account.js     Password reset and email confirmation
 │   │   ├── admin.js       Staff-only shipment management
+│   │   ├── adminPeople.js Staff-only dashboard, users, and activity log
+│   │   ├── accountSettings.js Change name, email, or password; delete the account
 │   │   ├── myShipments.js A customer's saved shipments
 │   │   ├── notifications.js Update email settings and unsubscribing
 │   │   ├── pages.js       Builds each page from the shared layout
@@ -53,6 +57,8 @@ shiptrack-lite/
 │       ├── shipments.js
 │       ├── users.js
 │       ├── sessions.js
+│       ├── activityLog.js
+│       ├── dashboard.js
 │       ├── accountTokens.js
 │       ├── savedShipments.js
 │       └── rateLimits.js
@@ -117,7 +123,19 @@ Press `Ctrl + C` in the terminal to stop the server.
 | `GET /api/stats` | Real totals for the home page |
 | `POST /api/contact` | Send a message to the team `{ name, email, message }` |
 | `GET /api/config` | Public settings the browser needs |
-| `GET /admin` | Staff dashboard |
+| `GET /admin` | Staff: shipments |
+| `GET /admin/dashboard`, `/admin/users`, `/admin/activity` | Staff: dashboard, users, activity log |
+| `GET /account` | Account settings |
+| `PUT /api/account/profile` | Change your name `{ name }` |
+| `PUT /api/account/password` | Change your password `{ currentPassword, newPassword }` |
+| `PUT /api/account/email` | Change your email `{ email, password }`; takes effect when the link sent to the new address is opened |
+| `POST /api/account/confirm-email-change` | Confirm the new email `{ token }` |
+| `DELETE /api/account` | Delete your account `{ password }` |
+| `GET /api/admin/dashboard` | Dashboard numbers (admin only) |
+| `GET /api/admin/activity` | The activity log, with optional `page` and `category` (admin only) |
+| `GET /api/admin/users` | Users, with optional `page` and `search` (admin only) |
+| `PUT /api/admin/users/:userId/role` | Make someone an admin or a customer `{ role }` (admin only) |
+| `DELETE /api/admin/users/:userId` | Delete a customer's account (admin only) |
 | `GET /api/admin/shipments` | One page of shipments, with optional `page`, `search`, and `status` (admin only) |
 | `POST /api/admin/shipments` | Create a shipment `{ origin, destination, estimatedDelivery }` (admin only) |
 | `PUT /api/admin/shipments/:trackingNumber` | Edit a shipment `{ origin, destination, estimatedDelivery }` (admin only) |

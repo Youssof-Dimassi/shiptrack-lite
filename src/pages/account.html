@@ -1,0 +1,72 @@
+<!-- title: Account settings -->
+<!-- scripts: account.js -->
+<!-- description: Change your name, email address, or password, or delete your ShipTrack Lite account. -->
+
+    <main class="page">
+        <div class="container settings">
+            <h1>Account settings</h1>
+            <p id="settings-loading" class="admin-note">Loading…</p>
+
+            <div id="settings-app" hidden>
+                <section class="settings-card" aria-labelledby="profile-title">
+                    <h2 id="profile-title">Profile</h2>
+                    <form id="name-form" class="settings-form">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" name="name" autocomplete="name" maxlength="100" required>
+                        <p class="form-error" role="alert" hidden></p>
+                        <p class="form-success" role="status" hidden></p>
+                        <button type="submit">Save name</button>
+                    </form>
+                </section>
+
+                <section class="settings-card" aria-labelledby="email-title">
+                    <h2 id="email-title">Email address</h2>
+                    <p class="settings-current">
+                        <span id="current-email"></span>
+                        <span id="email-status" class="status"></span>
+                    </p>
+                    <p id="pending-email-note" class="notify-note" hidden></p>
+                    <form id="email-form" class="settings-form">
+                        <label for="new-email">New email address</label>
+                        <input type="email" id="new-email" name="email" autocomplete="email" maxlength="254" required>
+                        <label for="email-password">Current password</label>
+                        <input type="password" id="email-password" name="password" autocomplete="current-password" required>
+                        <small class="form-hint">We'll send a link to the new address. Your email changes when you open it.</small>
+                        <p class="form-error" role="alert" hidden></p>
+                        <p class="form-success" role="status" hidden></p>
+                        <button type="submit">Change email</button>
+                    </form>
+                </section>
+
+                <section class="settings-card" aria-labelledby="password-title">
+                    <h2 id="password-title">Password</h2>
+                    <form id="password-form" class="settings-form">
+                        <label for="current-password">Current password</label>
+                        <input type="password" id="current-password" name="currentPassword" autocomplete="current-password" required>
+                        <label for="new-password">New password</label>
+                        <input type="password" id="new-password" name="newPassword" autocomplete="new-password"
+                            minlength="8" maxlength="128" required>
+                        <small class="form-hint">At least 8 characters. Your other devices will be logged out.</small>
+                        <p class="form-error" role="alert" hidden></p>
+                        <p class="form-success" role="status" hidden></p>
+                        <button type="submit">Change password</button>
+                    </form>
+                </section>
+
+                <section class="settings-card danger-zone" aria-labelledby="delete-title">
+                    <h2 id="delete-title">Delete account</h2>
+                    <p>This permanently deletes your account and your saved shipments. It can't be undone.</p>
+                    <button type="button" id="delete-start" class="button-secondary button-danger-outline">Delete my account</button>
+                    <form id="delete-form" class="settings-form" hidden>
+                        <label for="delete-password">Enter your password to confirm</label>
+                        <input type="password" id="delete-password" name="password" autocomplete="current-password" required>
+                        <p class="form-error" role="alert" hidden></p>
+                        <div class="dialog-actions">
+                            <button type="button" id="delete-cancel" class="button-secondary">Cancel</button>
+                            <button type="submit" class="button-danger">Permanently delete</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </main>
