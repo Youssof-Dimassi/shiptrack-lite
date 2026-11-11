@@ -24,6 +24,7 @@ import { adminRouter } from "./routes/admin.js";
 import { authRouter } from "./routes/auth.js";
 import { myShipmentsRouter } from "./routes/myShipments.js";
 import { notificationsRouter } from "./routes/notifications.js";
+import { pagesRouter } from "./routes/pages.js";
 import { shipmentsRouter } from "./routes/shipments.js";
 
 // Find the absolute path of the /public folder, no matter where the
@@ -99,13 +100,13 @@ app.use("/api", (req, res) => {
   res.status(404).json({ error: "API route not found." });
 });
 
-// --- 3. Static files ------------------------------------------------------
+// --- 3. Pages and files ----------------------------------------------------
 
-// Any other request: look for a matching file in /public.
-//   GET /            → public/index.html
-//   GET /login.html  → public/login.html
-// "extensions" also lets /login work without typing ".html".
-app.use(express.static(publicDir, { extensions: ["html"] }));
+// Pages are built from src/pages (see routes/pages.js): GET / and GET /login.
+app.use(pagesRouter);
+
+// Any other request: look for a matching file in /public, e.g. /style.css.
+app.use(express.static(publicDir));
 
 // --- 4. Not found (404) ---------------------------------------------------
 
